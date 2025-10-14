@@ -139,18 +139,15 @@
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
         .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; }
         .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
-        
-        /* DÜZƏLİŞ: Çap üçün xüsusi stillər */
         @media print {
             body { 
                 background-color: white;
-                margin: 0; /* Brauzerin standart kənar boşluqlarını ləğv edir */
+                margin: 0;
             }
             .printable-area { 
                 box-shadow: none; 
                 border: none;
-                padding: 0; /* Çapda daxili boşluqları sıfırlayırıq */
-                /* Yuxarıdan 40px (təxminən 1 sm) boşluq əlavə edir */
+                padding: 0;
                 margin-top: 40px; 
             }
         }
@@ -167,7 +164,7 @@
                 <legend>Bank Rekvizitləri</legend>
                 <div class="form-group full-width">
                     <label>Bank və hesab məlumatlarınız (Hesab-Faktura üçün)</label>
-                    <textarea id="companyBank" rows="4">Bank: Kapital Bank ASC&#10;H/H: AZ1234567890123456789012345678&#10;M/H: AZ1234567890123456789012345678&#10;Kod: 200100&#10;SWIFT: AIIBAZ2X</textarea>
+                    <textarea id="companyBank" rows="4"></textarea>
                 </div>
             </fieldset>
 
@@ -175,18 +172,18 @@
                 <legend>Şirkət Məlumatları</legend>
                 <div class="form-grid">
                     <div class="form-group full-width"><label for="companyLogo">Şirkət Loqo URL</label><input type="text" id="companyLogo" placeholder="https://example.com/logo.png"></div>
-                    <div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" value="TechSolutions MMC"></div>
-                    <div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" value="1234567890"></div>
-                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" value="Bakı şəh., Nizami küç. 1"></div>
+                    <div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" placeholder="Şirkətinizin Adı"></div>
+                    <div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" placeholder="Şirkətinizin VÖEN-i"></div>
+                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" placeholder="Şirkətinizin ünvanı"></div>
                 </div>
             </fieldset>
 
             <fieldset>
                 <legend>Müştəri Məlumatları</legend>
                 <div class="form-grid">
-                    <div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName" value="Müştəri Qrup MMC"></div>
-                    <div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen" value="9876543210"></div>
-                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress" value="Gəncə şəh., Atatürk pr. 5"></div>
+                    <div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName"></div>
+                    <div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen"></div>
+                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress"></div>
                 </div>
             </fieldset>
             
@@ -254,6 +251,7 @@
             altInput: true, altFormat: "d.m.Y", dateFormat: "Y-m-d", defaultDate: "today",
         });
 
+        // Elementlərin seçilməsi
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
@@ -270,6 +268,41 @@
         let items = [];
         let currentViewingProject = null;
         let currentEditingProjectId = null;
+
+        // --- YENİ HİSSƏ: Satıcı məlumatlarının yadda saxlanması və yüklənməsi ---
+        const sellerFields = [
+            document.getElementById('companyBank'), document.getElementById('companyLogo'),
+            document.getElementById('companyName'), document.getElementById('companyVoen'),
+            document.getElementById('companyAddress')
+        ];
+
+        function saveSellerInfo() {
+            const sellerInfo = {
+                bank: document.getElementById('companyBank').value,
+                logo: document.getElementById('companyLogo').value,
+                name: document.getElementById('companyName').value,
+                voen: document.getElementById('companyVoen').value,
+                address: document.getElementById('companyAddress').value
+            };
+            localStorage.setItem('sellerInfo', JSON.stringify(sellerInfo));
+        }
+
+        function loadSellerInfo() {
+            const sellerInfo = JSON.parse(localStorage.getItem('sellerInfo') || '{}');
+            document.getElementById('companyBank').value = sellerInfo.bank || '';
+            document.getElementById('companyLogo').value = sellerInfo.logo || '';
+            document.getElementById('companyName').value = sellerInfo.name || '';
+            document.getElementById('companyVoen').value = sellerInfo.voen || '';
+            document.getElementById('companyAddress').value = sellerInfo.address || '';
+        }
+
+        sellerFields.forEach(field => {
+            field.addEventListener('input', saveSellerInfo);
+        });
+        
+        loadSellerInfo(); // Səhifə yüklənəndə məlumatları yükləyirik
+        // --- YENİ HİSSƏ SONU ---
+
 
         excelInput.addEventListener('change', (event) => {
             const file = event.target.files[0]; if (!file) return;
@@ -410,7 +443,12 @@
         }
         
         function resetForm() {
-            document.querySelector('.form-container').reset();
+            // Reset edəndə satıcı məlumatları qalmalıdır, ona görə form.reset() istifadə etmirik
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientVoen').value = '';
+            document.getElementById('clientAddress').value = '';
+            document.getElementById('projectId').value = '';
+
             const fp = document.querySelector("#docDate")._flatpickr;
             fp.setDate("today");
             items = []; currentEditingProjectId = null;
@@ -449,11 +487,7 @@
         window.loadProjectForEditing = function(id) {
             const project = getProjects().find(p => p.id === id); if (!project) return;
             const data = project.rawData;
-            document.getElementById('companyLogo').value = data.companyInfo.logo || '';
-            document.getElementById('companyName').value = data.companyInfo.name;
-            document.getElementById('companyVoen').value = data.companyInfo.voen;
-            document.getElementById('companyAddress').value = data.companyInfo.address;
-            document.getElementById('companyBank').value = data.companyInfo.bank;
+            // Satıcı məlumatları onsuz da yüklənib, onları yenidən yükləməyə ehtiyac yoxdur.
             document.getElementById('clientName').value = data.clientInfo.name;
             document.getElementById('clientVoen').value = data.clientInfo.voen;
             document.getElementById('clientAddress').value = data.clientInfo.address;
