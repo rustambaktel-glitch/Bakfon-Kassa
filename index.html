@@ -277,7 +277,7 @@
                 li.innerHTML = `
                     <span>
                         <strong>${p.clientInfo.name}</strong><br>
-                        <small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ')})</small>
+                        <small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small>
                     </span>
                     <span class="project-actions">
                         <button onclick="viewProject('${p.id}')">Bax</button>
@@ -328,20 +328,22 @@
         // --- DƏYİŞİKLİK EDİLMİŞ HİSSƏ ---
         function generateDocumentHTML(type, data) {
             const { companyInfo, clientInfo, docInfo, items } = data;
-            const docDate = new Date(docInfo.rawDate).toLocaleDateString('az-AZ', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // DƏYİŞİKLİK: Tarix formatı yeniləndi
+            const numericDate = new Date(docInfo.rawDate).toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const docDate = `${numericDate}-ci il`;
+            
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
             
             let docTitle = '';
             switch(type){
-                // DƏYİŞİKLİK: Sənəd adı yeniləndi
                 case 'quote': docTitle = 'Qiymət Razılaşdırma Protokolu'; break;
                 case 'act': docTitle = 'Təhvil-Təslim Aktı'; break;
                 case 'invoice': docTitle = 'Hesab-Faktura'; break;
             }
 
-            // DƏYİŞİKLİK: Bank rekvizitləri üçün yeni yer
             let bankDetailsHTML = '';
             if (type === 'invoice' && companyInfo.bank) {
                 bankDetailsHTML = `<div class="doc-bank-details">
@@ -368,7 +370,6 @@
                 : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;">
                 <strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`;
             
-            // DƏYİŞİKLİK: Bank rekvizitlərinin yeri dəyişdirildi
             return `<div class="printable-area">
                 <div class="doc-header">
                     <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div>
