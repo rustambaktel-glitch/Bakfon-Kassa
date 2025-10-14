@@ -3,110 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru (Final Versiya)</title>
+    <title>Sənəd Generatoru (Firestore Versiya)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         :root {
-            --primary-color: #4299E1; /* Bright Blue Accent */
-            --primary-hover-color: #63B3ED;
-            --background-color: #1A202C; /* Very Dark Slate */
-            --secondary-color: #2D3748; /* Darker Slate (for containers) */
-            --border-color: #4A5568; /* Grayish Blue */
-            --text-color: #E2E8F0; /* Light Gray (for text) */
-            --text-muted-color: #A0AEC0; /* Muted Gray */
-            --danger-color: #E53E3E; /* Red */
+            --primary-color: #4299E1; --primary-hover-color: #63B3ED; --background-color: #1A202C;
+            --secondary-color: #2D3748; --border-color: #4A5568; --text-color: #E2E8F0;
+            --text-muted-color: #A0AEC0; --danger-color: #E53E3E;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        body {
-            font-family: var(--font-family);
-            background-color: var(--background-color);
-            color: var(--text-color);
-            margin: 0;
-            font-size: 14px;
-        }
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            padding: 25px;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-        .form-container, .sidebar {
-            background-color: var(--secondary-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 25px;
-            overflow-y: auto;
-            height: calc(100vh - 50px);
-        }
-        h1, h2 {
-            color: var(--text-color);
-            margin-top: 0;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-        }
+        body { font-family: var(--font-family); background-color: var(--background-color); color: var(--text-color); margin: 0; font-size: 14px; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding: 25px; height: 100vh; box-sizing: border-box; }
+        .form-container, .sidebar { background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; overflow-y: auto; height: calc(100vh - 50px); }
+        h1, h2 { color: var(--text-color); margin-top: 0; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         h1 { font-size: 24px; margin-bottom: 25px; color: white; }
         h2 { font-size: 20px; margin-bottom: 20px; text-align: left; }
-
-        fieldset {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        legend {
-            font-weight: 600;
-            color: var(--primary-color);
-            padding: 0 10px;
-            margin-left: 5px;
-        }
+        fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        legend { font-weight: 600; color: var(--primary-color); padding: 0 10px; margin-left: 5px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-group.full-width { grid-column: 1 / -1; }
         label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-muted-color); }
-        input, textarea, select {
-            width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
-            border-radius: 6px; font-size: 14px; box-sizing: border-box;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: all 0.2s ease-in-out;
-        }
+        input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: var(--background-color); color: var(--text-color); transition: all 0.2s ease-in-out; }
         input#docDate { background-color: var(--background-color) !important; color: var(--text-color) !important; }
-
         input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3); }
         .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
         .items-table th { background-color: var(--background-color); font-weight: 600; }
         .delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 16px; }
         .totals { margin-top: 15px; text-align: right; }
-        .btn {
-            padding: 12px 25px; font-size: 16px; font-weight: 600; border: none;
-            border-radius: 6px; cursor: pointer; color: #ffffff; background-color: var(--primary-color);
-            width:100%; transition: background-color 0.2s;
-        }
+        .btn { padding: 12px 25px; font-size: 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; color: #ffffff; background-color: var(--primary-color); width:100%; transition: background-color 0.2s; }
         .btn:hover { background-color: var(--primary-hover-color); }
-        .custom-file-upload {
-            border: 1px solid var(--border-color);
-            display: inline-block;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 6px;
-            background-color: var(--secondary-color);
-            text-align: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
+        .custom-file-upload { border: 1px solid var(--border-color); display: inline-block; padding: 8px 15px; cursor: pointer; border-radius: 6px; background-color: var(--secondary-color); text-align: center; width: 100%; box-sizing: border-box; }
         input[type="file"] { display: none; }
-        
         #saved-projects-list ul { list-style: none; padding: 0; margin: 0; }
         #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
         .project-actions button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 5px 10px; margin-left: 5px; cursor: pointer; transition: all 0.2s; }
         .project-actions button:hover { border-color: var(--primary-color); color: var(--primary-color); }
-        
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: var(--secondary-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 8.5in; height: 90%; max-height: 11in; box-shadow: 0 5px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid var(--border-color); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
@@ -117,57 +54,33 @@
         .modal-body { flex-grow: 1; overflow-y: auto; padding: 20px; background: #525252; margin-top: 15px; border-radius: 6px; }
         #printModalBtn { background-color: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
         #printModalBtn:hover { background-color: var(--primary-hover-color); }
-        
         .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; }
         .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; }
         .doc-header img { max-width: 150px; max-height: 70px; }
         .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; }
-        .doc-bank-details {
-            margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px;
-            font-size: 12px; line-height: 1.6;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
+        .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
         .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } 
-        .doc-parties div { 
-            width: 48%; line-height: 1.5; font-size: 12px;
-            overflow-wrap: break-word;
-            word-break: break-all;
-        }
+        .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; overflow-wrap: break-word; word-break: break-all; }
         .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
         .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; } .doc-table th { background-color: #f8f9fa; }
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
         .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; }
         .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
         @media print {
-            body { 
-                background-color: white;
-                margin: 0;
-            }
-            .printable-area { 
-                box-shadow: none; 
-                border: none;
-                padding: 0;
-                margin-top: 40px; 
-            }
+            body { background-color: white; margin: 0; }
+            .printable-area { box-shadow: none; border: none; padding: 0; margin-top: 40px; }
         }
     </style>
 </head>
 <body>
-
     <div class="main-layout">
         <div class="form-container">
             <h1>Sənəd Generatoru</h1>
             <input type="hidden" id="projectId">
-            
             <fieldset>
                 <legend>Bank Rekvizitləri</legend>
-                <div class="form-group full-width">
-                    <label>Bank və hesab məlumatlarınız (Hesab-Faktura üçün)</label>
-                    <textarea id="companyBank" rows="4"></textarea>
-                </div>
+                <div class="form-group full-width"><label>Bank və hesab məlumatlarınız</label><textarea id="companyBank" rows="4"></textarea></div>
             </fieldset>
-
             <fieldset>
                 <legend>Şirkət Məlumatları</legend>
                 <div class="form-grid">
@@ -177,7 +90,6 @@
                     <div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" placeholder="Şirkətinizin ünvanı"></div>
                 </div>
             </fieldset>
-
             <fieldset>
                 <legend>Müştəri Məlumatları</legend>
                 <div class="form-grid">
@@ -186,7 +98,6 @@
                     <div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress"></div>
                 </div>
             </fieldset>
-            
             <fieldset>
                 <legend>Sənəd Məlumatları</legend>
                  <div class="form-grid">
@@ -194,7 +105,6 @@
                     <div class="form-group"><label>Tarix</label><input type="text" id="docDate" placeholder="Tarixi seçin..."></div>
                  </div>
             </fieldset>
-
             <fieldset>
                 <legend>Məhsullar / Xidmətlər</legend>
                 <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 10px;">
@@ -206,27 +116,19 @@
                 <table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table>
                 <div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div>
             </fieldset>
-
             <fieldset>
                 <legend>Excel-dən Məhsul Importu</legend>
-                <label for="excel-input" class="custom-file-upload">
-                    Excel Faylı Seçin (.xlsx, .xls)
-                </label>
+                <label for="excel-input" class="custom-file-upload">Excel Faylı Seçin (.xlsx, .xls)</label>
                 <input type="file" id="excel-input" accept=".xlsx, .xls">
-                <p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">
-                    Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.
-                </p>
+                <p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.</p>
             </fieldset>
-
             <button class="btn" id="saveProjectBtn">Sənədləri Hazırla və Yadda Saxla</button>
         </div>
-
         <div class="sidebar">
             <h2>Saxlanılan Layihələr</h2>
             <div id="saved-projects-list"><ul></ul></div>
         </div>
     </div>
-
     <div class="modal-overlay" id="viewModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -244,14 +146,26 @@
         </div>
     </div>
 
-
     <script>
+        // --- Firebase Başlatma ---
+        const firebaseConfig = {
+            // ⚠️ DİQQƏT: BU SƏTRİ ÖZ AÇARINIZLA DƏYİŞİN! SİZİN KONSOLDAN GÖTÜRDÜYÜNÜZ AÇAR BURADA OLMALIDIR.
+            apiKey: "AIzaSyBbagg2DVzviydqmYzwdG3DbO9BO6aoA8A",
+            // ------------------------------------------------------------------------------------------
+            authDomain: "sened-generatoru.firebaseapp.com",
+            projectId: "sened-generatoru",
+            storageBucket: "sened-generatoru.appspot.com",
+            messagingSenderId: "888906443579",
+            appId: "1:888906443579:web:3287dc68ef48a57184a51e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        // --- Firebase Başlatma Sonu ---
+
     document.addEventListener('DOMContentLoaded', () => {
         flatpickr("#docDate", {
             altInput: true, altFormat: "d.m.Y", dateFormat: "Y-m-d", defaultDate: "today",
         });
-
-        // Elementlərin seçilməsi
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
@@ -269,7 +183,6 @@
         let currentViewingProject = null;
         let currentEditingProjectId = null;
 
-        // --- YENİ HİSSƏ: Satıcı məlumatlarının yadda saxlanması və yüklənməsi ---
         const sellerFields = [
             document.getElementById('companyBank'), document.getElementById('companyLogo'),
             document.getElementById('companyName'), document.getElementById('companyVoen'),
@@ -284,25 +197,25 @@
                 voen: document.getElementById('companyVoen').value,
                 address: document.getElementById('companyAddress').value
             };
-            localStorage.setItem('sellerInfo', JSON.stringify(sellerInfo));
+            db.collection('settings').doc('seller').set(sellerInfo)
+              .catch(error => console.error("Satıcı məlumatını saxlama xətası: ", error));
         }
 
         function loadSellerInfo() {
-            const sellerInfo = JSON.parse(localStorage.getItem('sellerInfo') || '{}');
-            document.getElementById('companyBank').value = sellerInfo.bank || '';
-            document.getElementById('companyLogo').value = sellerInfo.logo || '';
-            document.getElementById('companyName').value = sellerInfo.name || '';
-            document.getElementById('companyVoen').value = sellerInfo.voen || '';
-            document.getElementById('companyAddress').value = sellerInfo.address || '';
+            db.collection('settings').doc('seller').get().then(doc => {
+                if (doc.exists) {
+                    const sellerInfo = doc.data();
+                    document.getElementById('companyBank').value = sellerInfo.bank || '';
+                    document.getElementById('companyLogo').value = sellerInfo.logo || '';
+                    document.getElementById('companyName').value = sellerInfo.name || '';
+                    document.getElementById('companyVoen').value = sellerInfo.voen || '';
+                    document.getElementById('companyAddress').value = sellerInfo.address || '';
+                }
+            }).catch(error => console.error("Satıcı məlumatını yükləmə xətası: ", error));
         }
 
-        sellerFields.forEach(field => {
-            field.addEventListener('input', saveSellerInfo);
-        });
-        
-        loadSellerInfo(); // Səhifə yüklənəndə məlumatları yükləyirik
-        // --- YENİ HİSSƏ SONU ---
-
+        sellerFields.forEach(field => { field.addEventListener('input', saveSellerInfo); });
+        loadSellerInfo(); 
 
         excelInput.addEventListener('change', (event) => {
             const file = event.target.files[0]; if (!file) return;
@@ -328,35 +241,39 @@
             };
             reader.readAsArrayBuffer(file);
         });
-        
-        function getProjects() { return JSON.parse(localStorage.getItem('projects') || '[]'); }
-        function saveProjects(projects) { localStorage.setItem('projects', JSON.stringify(projects)); renderSavedProjects(); }
 
-        function renderSavedProjects() {
-            const projects = getProjects();
-            savedProjectsList.innerHTML = '';
-            projects.sort((a, b) => b.timestamp - a.timestamp).forEach(p => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>
-                        <strong>${p.clientInfo.name}</strong><br>
-                        <small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small>
-                    </span>
-                    <span class="project-actions">
-                        <button onclick="viewProject('${p.id}')">Bax</button>
-                        <button onclick="loadProjectForEditing('${p.id}')">Yüklə</button>
-                        <button onclick="deleteProject('${p.id}')">Sil</button>
-                    </span>`;
-                savedProjectsList.appendChild(li);
+        function listenForProjects() {
+            db.collection('projects').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                const projects = [];
+                snapshot.forEach(doc => {
+                    projects.push({ id: doc.id, ...doc.data() });
+                });
+                
+                savedProjectsList.innerHTML = '';
+                projects.forEach(p => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>
+                            <strong>${p.clientInfo.name}</strong><br>
+                            <small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small>
+                        </span>
+                        <span class="project-actions">
+                            <button onclick="viewProject('${p.id}')">Bax</button>
+                            <button onclick="loadProjectForEditing('${p.id}')">Yüklə</button>
+                            <button onclick="deleteProject('${p.id}')">Sil</button>
+                        </span>`;
+                    savedProjectsList.appendChild(li);
+                });
+                updateDocNumber(projects);
+            }, error => {
+                console.error("Layihələri dinləmə xətası: ", error);
             });
-            updateDocNumber();
         }
 
-        function updateDocNumber() {
+        function updateDocNumber(projects) {
             if (currentEditingProjectId) return;
-            const projects = getProjects();
             let lastNum = 0;
-            if (projects.length > 0) {
+            if (projects && projects.length > 0) {
                  lastNum = Math.max(0, ...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0)));
             }
             document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`;
@@ -373,19 +290,22 @@
                 docInfo: { number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value },
                 items: items
             };
-            const generatedDocs = { quote: generateDocumentHTML('quote', rawData), act: generateDocumentHTML('act', rawData), invoice: generateDocumentHTML('invoice', rawData) };
-            const projects = getProjects();
-            if (currentEditingProjectId) {
-                const projectIndex = projects.findIndex(p => p.id === currentEditingProjectId);
-                if (projectIndex > -1) { projects[projectIndex] = {...projects[projectIndex], rawData, generatedDocs, clientInfo: rawData.clientInfo, docInfo: rawData.docInfo}; }
-            } else {
-                projects.push({
-                    id: `${Date.now()}`, timestamp: Date.now(), clientInfo: rawData.clientInfo,
-                    docInfo: rawData.docInfo, rawData: rawData, generatedDocs: generatedDocs
-                });
-            }
-            saveProjects(projects);
-            resetForm();
+            
+            const projectId = currentEditingProjectId || `${Date.now()}`;
+            const newProject = {
+                timestamp: parseInt(projectId),
+                clientInfo: rawData.clientInfo,
+                docInfo: rawData.docInfo,
+                rawData: rawData,
+            };
+            
+            db.collection('projects').doc(projectId).set(newProject).then(() => {
+                console.log("Layihə uğurla saxlanıldı!");
+                resetForm();
+            }).catch(error => {
+                console.error("Layihəni saxlama xətası: ", error);
+                alert("Xəta baş verdi, layihə saxlanılmadı.");
+            });
         });
         
         function generateDocumentHTML(type, data) {
@@ -443,26 +363,29 @@
         }
         
         function resetForm() {
-            // Reset edəndə satıcı məlumatları qalmalıdır, ona görə form.reset() istifadə etmirik
             document.getElementById('clientName').value = '';
             document.getElementById('clientVoen').value = '';
             document.getElementById('clientAddress').value = '';
             document.getElementById('projectId').value = '';
-
             const fp = document.querySelector("#docDate")._flatpickr;
             fp.setDate("today");
             items = []; currentEditingProjectId = null;
             saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
-            renderTable(); updateDocNumber();
+            renderTable(); 
+            listenForProjects();
         }
         
         window.viewProject = function(id) {
-            const projects = getProjects(); currentViewingProject = projects.find(p => p.id === id);
-            if (!currentViewingProject) return;
-            viewModal.style.display = 'flex'; showDocumentInModal('quote');
+            db.collection('projects').doc(id).get().then(doc => {
+                if (!doc.exists) return;
+                currentViewingProject = { id: doc.id, ...doc.data() };
+                viewModal.style.display = 'flex';
+                showDocumentInModal('quote');
+            });
         }
         function showDocumentInModal(type) {
-            modalBody.innerHTML = currentViewingProject.generatedDocs[type];
+            const html = generateDocumentHTML(type, currentViewingProject.rawData);
+            modalBody.innerHTML = html;
             modalTabs.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
         }
         modalTabs.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') showDocumentInModal(e.target.dataset.type); });
@@ -485,23 +408,25 @@
         });
 
         window.loadProjectForEditing = function(id) {
-            const project = getProjects().find(p => p.id === id); if (!project) return;
-            const data = project.rawData;
-            // Satıcı məlumatları onsuz da yüklənib, onları yenidən yükləməyə ehtiyac yoxdur.
-            document.getElementById('clientName').value = data.clientInfo.name;
-            document.getElementById('clientVoen').value = data.clientInfo.voen;
-            document.getElementById('clientAddress').value = data.clientInfo.address;
-            document.getElementById('docNumber').value = data.docInfo.number;
-            const fp = document.querySelector("#docDate")._flatpickr;
-            fp.setDate(data.docInfo.rawDate);
-            items = data.items; renderTable();
-            currentEditingProjectId = id;
-            saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
+            db.collection('projects').doc(id).get().then(doc => {
+                if(!doc.exists) return;
+                const project = doc.data();
+                const data = project.rawData;
+                document.getElementById('clientName').value = data.clientInfo.name;
+                document.getElementById('clientVoen').value = data.clientInfo.voen;
+                document.getElementById('clientAddress').value = data.clientInfo.address;
+                document.getElementById('docNumber').value = data.docInfo.number;
+                const fp = document.querySelector("#docDate")._flatpickr;
+                fp.setDate(data.docInfo.rawDate);
+                items = data.items; renderTable();
+                currentEditingProjectId = id;
+                saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
+            });
         }
         
         window.deleteProject = function(id) {
             if (!confirm("Bu layihəni və ona aid bütün sənədləri silməyə əminsiniz?")) return;
-            saveProjects(getProjects().filter(p => p.id !== id));
+            db.collection('projects').doc(id).delete().catch(error => console.error("Layihəni silmə xətası: ", error));
         }
 
         addItemBtn.addEventListener('click', () => {
@@ -531,7 +456,7 @@
             subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`;
         }
         
-        renderSavedProjects();
+        listenForProjects();
     });
     </script>
 </body>
