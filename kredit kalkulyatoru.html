@@ -1,597 +1,564 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Baktel — Kredit və Satış Qiyməti</title>
-  <style>
-    :root{ 
-      --bg:#f7f9fc; --text:#0f172a; --card:#ffffff; --border:#e7eaf0; --muted:#51607a; --primary:#dc2626;
-      --input-border:#cfd5e1; --shadow:0 6px 18px rgba(2,6,23,.06); --radius:14px;
-      --table-border:#cbd5e1;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;font-size:16px;line-height:1.55; padding-left:260px}
-    .wrap{max-width:1200px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;gap:10px;margin:0 0 14px 0}
-    header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:.2px;color:var(--primary)}
-    h3{font-size:18px;font-weight:700;color:#111827;margin:0 0 8px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
-    .row{display:grid;gap:14px}
-    @media(min-width:720px){.row{grid-template-columns:repeat(12,1fr)}}
-    .col-12{grid-column:span 12}
-    .col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}
-    .col-3{grid-column:span 3}
-    label{font-size:13px;color:#334155;font-weight:600}
-    input,select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--input-border);background:#fff;color:#0f172a}
-    .btn{border:1px solid #cbd5e1;background:#f1f5f9;color:#0f172a;padding:11px 16px;border-radius:12px;cursor:pointer;transition:.15s ease;box-shadow:var(--shadow);font-weight:700}
-    .btn.success{background:linear-gradient(180deg,#22c55e,#16a34a);border-color:#15803d;color:#fff}
-    .btn.danger{background:linear-gradient(180deg,#ef4444,#dc2626);border-color:#b91c1c;color:#fff}
-    .btn.ghost{background:#fff}
-    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #c7d2fe;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px}
-    .muted{color:var(--muted);font-size:14px}
-    table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-    thead th{position:sticky;top:0;background:#f8fafc;padding:10px;font-weight:700;font-size:14px;color:#111827;border-bottom:1px solid var(--border);text-align:right}
-    tbody td{padding:10px;border-bottom:1px solid var(--border);font-size:13px;text-align:right}
-    tbody tr:nth-child(odd){background:rgba(2,6,23,.02)}
-    .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .notice{padding:12px;border-radius:12px;margin-top:8px}
-    .notice.warn{background:#fff1f2;border:1px solid #fecaca;color:#991b1b}
-    .notice.ok{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534}
-    .invalid{border-color:#ef4444 !important; box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sənəd Generatoru</title>
+    <style>
+        /* CSS Kodları - Dizayn üçün */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
 
-    /* Yan panel */
-    #sidebar{position:fixed; inset:0 auto 0 0; width:240px; background:#0f172a; color:#e5e7eb; border-right:1px solid #0b1220; box-shadow:var(--shadow); display:flex; flex-direction:column}
-    #sidebar .logo{padding:18px 16px; font-weight:800; letter-spacing:.2px; color:#fff; border-bottom:1px solid #1f2937}
-    #sidebar nav{padding:12px}
-    #sidebar .navbtn{width:100%; text-align:left; border:1px solid #334155; background:#111827; color:#e5e7eb; padding:12px 14px; border-radius:12px; cursor:pointer; transition:.15s ease; margin-bottom:10px; font-weight:700}
-    #sidebar .navbtn.active{background:#dc2626; border-color:#b91c1c; color:#fff}
-    #sidebar .navbtn:hover{transform:translateY(-1px)}
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-    @media print{ #sidebar{display:none} body{padding-left:0} }
-      /* ==== ÇAP (A4) ==== */
-    .print-root{font-family:"Times New Roman", Times, serif; color:#111}
-    .print-a4{width:210mm; min-height:297mm; margin:0 auto; padding:20mm 17mm 18mm; background:#fff}
-    .print-title{font-size:18pt; font-weight:700; text-align:center; text-transform:uppercase; letter-spacing:.2px}
-    .print-subtop{display:flex; justify-content:space-between; margin:6mm 0 4mm; font-size:11pt}
-    .print-h2{font-size:13pt; font-weight:700; text-align:center; margin:8mm 0 4mm}
-    .print-block{font-size:11pt; line-height:1.5; text-align:justify; margin:3mm 0}
-    .print-table{width:100%; border-collapse:collapse; font-size:11pt}
-    .print-table th,.print-table td{border:1px solid var(--table-border); padding:5px 7px; vertical-align:top}
-    .print-table th{background:#f5f5f5}
-    .sign-cols{display:flex; justify-content:space-between; gap:16mm; margin-top:12mm}
-    .sign{flex:1}
-    .sigline{display:block; border-bottom:1px solid #111; height:18px; margin-top:18px}
-    .sigcap{font-size:10.5pt; color:#333; margin-top:2mm}
-    .kecik{font-size:10.5pt}
+        h1, h2 {
+            color: #0056b3;
+            text-align: center;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
 
-    @media print{ 
-      #sidebar, header, #screen-calculator .card, #screen-pricing, .navbtn { display:none !important }
-      #printDoc { display:block !important }
-      body { padding-left:0; background:#fff }
-    }
-  </style>
+        fieldset {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        legend {
+            font-weight: 700;
+            color: #0056b3;
+            padding: 0 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .items-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        #generator-buttons {
+            text-align: center;
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary { background-color: #007bff; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-info { background-color: #17a2b8; }
+        .btn-info:hover { background-color: #117a8b; }
+        .btn-add { background-color: #218838; }
+
+        #output {
+            margin-top: 30px;
+            padding: 30px;
+            border: 1px solid #ccc;
+            background: #fff;
+            display: none; /* Initially hidden */
+        }
+        
+        #output h2 {
+             text-align: center;
+             color: #333;
+             font-size: 1.8em;
+             border-bottom: 2px solid #555;
+             padding-bottom: 10px;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .output-header div {
+            width: 48%;
+        }
+
+        .output-header h3 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            color: #0056b3;
+        }
+        
+        .document-info {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .signature-area {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 45%;
+        }
+        .signature-box p {
+            margin-top: 50px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: #fff;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 0;
+            }
+            .form-section, #generator-buttons, #printBtn, h1 {
+                display: none;
+            }
+            #output {
+                display: block !important;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Yan panel -->
-  <aside id="sidebar">
-    <div class="logo">Baktel — Modullar</div>
-    <nav>
-      <button id="btnNavCalc" class="navbtn active">Kredit kalkulyatoru</button>
-      <button id="btnNavPricing" class="navbtn">Satış qiyməti</button>
-    </nav>
-  </aside>
 
-  <div class="wrap">
-    <header>
-      <h1>KREDİT KALKULYATORU</h1>
-    </header>
+    <div class="container">
+        <h1>Avtomatik Sənəd Generatoru</h1>
 
-    <!-- === KALKULYATOR: əvvəlki tam variant (sənəd + müqavilə + formalar) === -->
-    <main id="screen-calculator">
-      <section id="calc" class="card">
-        <div id="calcAlert" class="notice warn" style="display:none"></div>
-        <div id="calcOk" class="notice ok" style="display:none"></div>
-        <div class="row">
-          <div class="col-4">
-            <label>Məhsul dəyəri (AZN)</label>
-            <input id="price" type="number" min="0" step="0.01" placeholder="0.00" />
-          </div>
-          <div class="col-3">
-            <label>Müddət (ay)</label>
-            <select id="months" required>
-              <option value="">— Seçin —</option>
-              <option value="3">3</option>
-              <option value="6">6</option>
-              <option value="9">9</option>
-              <option value="12">12</option>
-              <option value="15">15</option>
-              <option value="18">18</option>
-            </select>
-          </div>
-          <div class="col-3">
-            <label>Risk qrupu</label>
-            <select id="risk" required>
-              <option value="">— Seçin —</option>
-              <option value="low">Aşağı risk (A)</option>
-              <option value="med">Orta risk (B)</option>
-              <option value="high">Yüksək risk (C)</option>
-            </select>
-          </div>
-          <div class="col-3">
-            <label>Aylıq əmək haqqı (AZN)</label>
-            <input id="salary" type="number" min="1" step="1" required />
-          </div>
-          <div class="col-3">
-            <label>Digər öhdəliklər (AZN)</label>
-            <input id="oblig" type="number" min="0" step="1" required />
-          </div>
-
-          <div class="col-12 inline-check">
-            <input class="big-check" type="checkbox" id="manualDownChk" />
-            <label for="manualDownChk">İlkin ödənişi manual daxil et</label>
-          </div>
-          <div class="col-3" id="manualDownWrap" style="display:none">
-            <label>İlkin ödəniş (AZN)</label>
-            <input id="manualDownAmt" type="number" min="0" step="0.01" placeholder="0" disabled />
-          </div>
-
-          <div class="col-12 inline-check">
-            <input class="big-check" type="checkbox" id="addIncomeChk" />
-            <label for="addIncomeChk">Əlavə gəlir var?</label>
-          </div>
-          <div class="col-3" id="addIncomeTypeWrap" style="display:none">
-            <label>Əlavə gəlir növü</label>
-            <select id="addIncomeType" disabled>
-              <option value="">— Seçin —</option>
-              <option value="muavinet">Müavinət</option>
-              <option value="bonus">Bonus</option>
-              <option value="kiraye">Kirayə gəliri</option>
-              <option value="freelance">Freelance</option>
-              <option value="parttime">Müvəqqəti əlavə iş</option>
-            </select>
-          </div>
-          <div class="col-3" id="addIncomeAmtWrap" style="display:none">
-            <label>Əlavə gəlir məbləği (AZN)</label>
-            <input id="addIncomeAmt" type="number" min="1" step="1" disabled />
-          </div>
-
-          <div class="col-12" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <button class="btn success" id="btnCalc">Hesabla (Enter)</button>
-            <button class="btn danger" id="btnReset">Sıfırla (Esc)</button>
-            <button class="btn ghost" id="btnPrint">PDF (Çap)</button>
-            <button class="btn primary" id="btnFinalize">Əlavə rəsmiləşdir</button>
-          </div>
-
-          <div id="finalizeWrap" class="col-12" style="display:none">
-            <div class="card" style="margin:8px 0">
-              <h3>Müştəri məlumatları</h3>
-              <div class="row">
-                <div class="col-4"><label>Müştəri A.S.A.</label><input id="custName" type="text" placeholder="Ad Soyad" required /></div>
-                <div class="col-4"><label>Əlaqə nömrəsi</label><input id="custPhone" type="tel" placeholder="050 xxx xx xx" pattern="^\s*(\+?994|0)?\s*(50|51|55|70|77)\s*\d{3}\s*\d{2}\s*\d{2}\s*$" required /></div>
-                <div class="col-4"><label>Məhsul adı/model</label><input id="prodName" type="text" placeholder="Məhsul" required /></div>
-
-                <div class="col-3"><label>Ş/V seriya və nömrəsi</label><input id="idSerial" type="text" placeholder="AA 0367083" required /></div>
-                <div class="col-3"><label>FIN kodu</label><input id="finCode" type="text" placeholder="XXXXXXX" required /></div>
-                <div class="col-3"><label>Doğum tarixi</label><input id="birthDate" type="date" required /></div>
-                <div class="col-3"><label>Qeydiyyat/Yaşayış ünvanı</label><input id="address" type="text" required /></div>
-
-                <div class="col-4"><label>IMEI 1</label><input id="imei1" type="text" inputmode="numeric" pattern="^\d{15}$" placeholder="15 rəqəm" required /></div>
-                <div class="col-4"><label>IMEI 2</label><input id="imei2" type="text" inputmode="numeric" pattern="^(\d{15})?$" placeholder="(opsional) 15 rəqəm" /></div>
-                <div class="col-4"><label>Müqavilə №</label><input id="contractNo" type="text" placeholder="BT 13107" required /></div>
-
-                <div class="col-3"><label>Filial</label><input id="branch" type="text" value="Nəsimi" required /></div>
-                <div class="col-3"><label>Valyuta</label><select id="currency" required><option value="AZN" selected>AZN</option></select></div>
-                <div class="col-3"><label>Kreditin verilmə tarixi</label><input id="startDate" type="date" required /></div>
-
-                <div class="col-3">
-                  <label>Satıcı nümayəndə</label>
-                  <select id="sellerRep" required>
-                    <option value="">— Seçin —</option>
-                    <option>Vəliməmmədov Niyazi Səhhət oğlu</option>
-                    <option>Abaszadə Mədət Yusif oğlu</option>
-                  </select>
+        <div class="form-section">
+            <fieldset>
+                <legend>Sizin Şirkət Məlumatları</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="companyName">Şirkətin adı</label>
+                        <input type="text" id="companyName" value="Nümunə MMC">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyVoen">VÖEN</label>
+                        <input type="text" id="companyVoen" value="1234567890">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyAddress">Ünvan</label>
+                        <input type="text" id="companyAddress" value="Bakı şəh., Nizami küç. 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyBank">Bank rekvizitləri (Hesab-Faktura üçün)</label>
+                        <textarea id="companyBank">Bank: Kapital Bank ASC\nH/H: AZ12345...\nM/H: AZ12345...\nKod: 200100\nSWIFT: AIIBAZ2X</textarea>
+                    </div>
                 </div>
+            </fieldset>
 
-                <div class="col-12" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px">
-                  <button class="btn success" id="btnFinalizePrint">Təsdiqlə və Çap et</button>
-                  <button class="btn" id="btnFinalizeClose">Bağla</button>
+            <fieldset>
+                <legend>Müştəri Məlumatları</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="clientName">Müştəri şirkətin adı</label>
+                        <input type="text" id="clientName" value="Müştəri Qrup MMC">
+                    </div>
+                    <div class="form-group">
+                        <label for="clientVoen">VÖEN</label>
+                        <input type="text" id="clientVoen" value="9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label for="clientAddress">Ünvan</label>
+                        <input type="text" id="clientAddress" value="Gəncə şəh., Atatürk pr. 5">
+                    </div>
                 </div>
-              </div>
-            </div>
-          </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend>Sənəd Məlumatları</legend>
+                 <div class="form-grid">
+                     <div class="form-group">
+                        <label for="docNumber">Sənəd Nömrəsi</label>
+                        <input type="text" id="docNumber" value="SN-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="docDate">Tarix</label>
+                        <input type="date" id="docDate">
+                    </div>
+                 </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Məhsullar / Xidmətlər</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="itemName">Adı</label>
+                        <input type="text" id="itemName" placeholder="Məhsul və ya xidmət">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemQuantity">Miqdar</label>
+                        <input type="number" id="itemQuantity" value="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Vahidin qiyməti (AZN)</label>
+                        <input type="number" id="itemPrice" value="0" min="0">
+                    </div>
+                </div>
+                <button id="addItemBtn" class="btn btn-add" style="margin-top:10px;">Cədvələ Əlavə et</button>
+                
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Adı</th>
+                            <th>Miqdar</th>
+                            <th>Qiymət</th>
+                            <th>Cəm</th>
+                            <th>Sil</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTbody">
+                        </tbody>
+                </table>
+                <div class="totals">
+                    <p>Məbləğ (ƏDV-siz): <span id="subtotal">0.00</span> AZN</p>
+                    <p>ƏDV (18%): <span id="vat">0.00</span> AZN</p>
+                    <p><strong>Yekun Məbləğ: <span id="total">0.00</span> AZN</strong></p>
+                </div>
+            </fieldset>
         </div>
-      </section>
 
-      <div class="layout">
-        <section class="card" id="summary"></section>
-        <section class="card">
-          <h3>Ödəniş cədvəli</h3>
-          <div id="scheduleWrap" style="overflow:auto;max-height:420px"></div>
-        </section>
-      </div>
-    </main>
-
-    <!-- === SATIŞ QİYMƏTİ EKRANI === -->
-    <main id="screen-pricing" style="display:none">
-      <section class="card">
-        <h3>Satış qiyməti kalkulyatoru</h3>
-        <p class="muted" style="margin-top:0">Kateqoriyanı seçin, sonra maya dəyərini yazın — nağd və kredit qiymətləri avtomatik hesablanacaq.</p>
-        <div class="row">
-          <div class="col-4">
-            <label>Kateqoriya</label>
-            <select id="pCategory">
-              <option value="">— Seçin —</option>
-              <option value="phone">Mobil telefon</option>
-              <option value="home">Məişət texnikası</option>
-              <option value="acc">Aksessuar</option>
-              <option value="office">Ofis avadanlığı</option>
-            </select>
-          </div>
-          <div class="col-4">
-            <label>Maya dəyəri (AZN)</label>
-            <input id="pCost" type="number" min="0" step="0.01" placeholder="0.00" disabled />
-          </div>
-          <div class="col-12">
-            <div id="pAlert" class="notice warn" style="display:none"></div>
-          </div>
-          <div class="col-6">
-            <div class="card" style="margin:0">
-              <h3 style="margin-top:0">Nağd qiymət</h3>
-              <div id="pCash" class="pill" style="font-size:16px">—</div>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="card" style="margin:0">
-              <h3 style="margin-top:0">Kredit qiyməti</h3>
-              <div id="pCredit" class="pill" style="font-size:16px">—</div>
-            </div>
-          </div>
+        <div id="generator-buttons">
+            <button class="btn btn-primary" onclick="generateDocument('quote')">Qiymət Təklifi Hazırla</button>
+            <button class="btn btn-success" onclick="generateDocument('act')">Təhvil-Təslim Aktı Hazırla</button>
+            <button class="btn btn-info" onclick="generateDocument('invoice')">Hesab-Faktura Hazırla</button>
         </div>
-      </section>
-    </main>
-    <div id="printDoc" class="print-root" style="display:none"><div class="print-a4" id="printA4"></div></div>
-  </div>
 
-  <script>
-    /* ==== UTIL ==== */
-    const fmtAZN = n=> (new Intl.NumberFormat('az-AZ',{style:'currency',currency:'AZN',maximumFractionDigits:2})).format(n||0);
-    const round2 = n=> Math.round((n+Number.EPSILON)*100)/100;
-    const ddmmyyyy = (d)=>{ const dt=new Date(d); const dd=String(dt.getDate()).padStart(2,'0'); const mm=String(dt.getMonth()+1).padStart(2,'0'); const yyyy=dt.getFullYear(); return `${dd}.${mm}.${yyyy}`; };
-    const todayISO = ()=> { const t=new Date(); const mm=String(t.getMonth()+1).padStart(2,'0'); const dd=String(t.getDate()).padStart(2,'0'); return `${t.getFullYear()}-${mm}-${dd}`; };
+        <div id="output">
+            </div>
 
-    /* ==== POLICY ==== */
-    const POLICY_RISK_ONLY = { low: 0.20, med: 0.30, high: 0.50 };
-    const MIN_DOWN_AZN = 50;
-    const MAX_OBLIG_SHARE = 0.50;
-    const MAX_DSR = 0.40;
+    </div>
 
-    /* ==== DEFAULTS & RESTORE ==== */
-    window.addEventListener('DOMContentLoaded', () => {
-      const sd = document.getElementById('startDate');
-      if (sd && !sd.value) sd.value = todayISO();
-      restoreState();
-    });
-    function ensureStartDateDefault(){
-      const sd = document.getElementById('startDate');
-      if (sd && !sd.value) sd.value = todayISO();
-    }
+    <script>
+        // JavaScript Kodları - Məntiq üçün
 
-    /* ==== STATE (yerli yaddaş) ==== */
-    function saveState(){
-      const ids=['price','months','risk','salary','oblig','manualDownChk','manualDownAmt','addIncomeChk','addIncomeType','addIncomeAmt'];
-      const obj={}; ids.forEach(id=>{ const el=document.getElementById(id); if(!el) return; if(el.type==='checkbox') obj[id]=el.checked; else obj[id]=el.value; });
-      localStorage.setItem('bk_calc_v2', JSON.stringify(obj));
-    }
-    function restoreState(){
-      try{
-        const raw=localStorage.getItem('bk_calc_v2'); if(!raw) return; const obj=JSON.parse(raw);
-        Object.entries(obj).forEach(([k,v])=>{ const el=document.getElementById(k); if(!el) return; if(el.type==='checkbox') el.checked=!!v; else el.value=v; });
-        toggleManualDown(); toggleExtraIncome(); onIncomeTypeChange();
-      }catch{}
-    }
+        // Elementləri əvvəlcədən seçirik
+        const docDateInput = document.getElementById('docDate');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const itemsTbody = document.getElementById('itemsTbody');
+        const subtotalEl = document.getElementById('subtotal');
+        const vatEl = document.getElementById('vat');
+        const totalEl = document.getElementById('total');
+        const outputDiv = document.getElementById('output');
 
-    /* ==== HELPERS ==== */
-    function getDownPayment(price, riskKey, salary=0, oblig=0){
-      const base = POLICY_RISK_ONLY[riskKey] ?? POLICY_RISK_ONLY.med;
-      salary = Number(salary)||0; oblig = Number(oblig)||0;
-      const net = Math.max(0, salary - oblig);
-      const ratio = salary>0 ? net / salary : 0;
-      let mod = 0;
-      if(ratio >= 0.70) mod = -0.10; else if(ratio >= 0.50) mod = -0.05; else if(ratio >= 0.35) mod = 0.00; else if(ratio >= 0.20) mod = +0.10; else mod = +0.20;
-      if(riskKey==='high') mod *= 0.7;
-      const pct = Math.min(0.85, Math.max(0.10, base + mod));
-      let down = price * pct;
-      if(down < MIN_DOWN_AZN) down = MIN_DOWN_AZN;
-      if(down > price) down = price;
-      return { down: round2(down), pct, ratio, net };
-    }
+        // Məhsulların saxlanacağı array (siyahı)
+        let items = [];
+        
+        // Səhifə yüklənəndə bugünkü tarixi təyin et
+        document.addEventListener('DOMContentLoaded', () => {
+            docDateInput.valueAsDate = new Date();
+        });
 
-    /* ==== UI TOGGLES ==== */
-    function toggleExtraIncome(){
-      const chk=document.getElementById('addIncomeChk');
-      const typeWrap=document.getElementById('addIncomeTypeWrap');
-      const amtWrap=document.getElementById('addIncomeAmtWrap');
-      const typeSel=document.getElementById('addIncomeType');
-      const amtInp=document.getElementById('addIncomeAmt');
-      if(!chk||!typeWrap||!amtWrap||!typeSel||!amtInp) return;
-      const on=!!chk.checked;
-      typeWrap.style.display= on? 'block':'none';
-      typeSel.disabled = !on; if(!on) typeSel.value='';
-      amtWrap.style.display = 'none';
-      amtInp.disabled = true; amtInp.value='';
-    }
-    function onIncomeTypeChange(){
-      const typeSel=document.getElementById('addIncomeType');
-      const amtWrap=document.getElementById('addIncomeAmtWrap');
-      const amtInp=document.getElementById('addIncomeAmt');
-      if(!typeSel||!amtWrap||!amtInp) return;
-      if(typeSel.value){ amtWrap.style.display='block'; amtInp.disabled=false; }
-      else { amtWrap.style.display='none'; amtInp.disabled=true; amtInp.value=''; }
-    }
-    function toggleManualDown(){
-      const chk=document.getElementById('manualDownChk');
-      const wrap=document.getElementById('manualDownWrap');
-      const inp=document.getElementById('manualDownAmt');
-      if(!chk||!wrap||!inp) return;
-      const on=!!chk.checked; wrap.style.display=on?'block':'none'; inp.disabled=!on; if(!on) inp.value='';
-    }
-    function toggleFinalize(force){
-      const box=document.getElementById('finalizeWrap'); if(!box) return;
-      const show = typeof force==='boolean' ? force : (box.style.display==='none');
-      box.style.display = show? 'block' : 'none';
-      if(show){ ensureStartDateDefault(); box.scrollIntoView({behavior:'smooth',block:'center'}); }
-    }
+        // "Əlavə et" düyməsinə klikləndikdə
+        addItemBtn.addEventListener('click', () => {
+            const name = document.getElementById('itemName').value;
+            const quantity = parseFloat(document.getElementById('itemQuantity').value);
+            const price = parseFloat(document.getElementById('itemPrice').value);
 
-    /* ==== CORE CALC ==== */
-    function showWarn(msg){ const box=document.getElementById('calcAlert'); box.style.display='block'; box.textContent=msg; document.getElementById('calcOk').style.display='none'; }
-    function showOk(msg){ const box=document.getElementById('calcOk'); box.style.display='block'; box.textContent=msg; document.getElementById('calcAlert').style.display='none'; }
-    function markInvalid(el){ el?.classList.add('invalid'); }
+            if (name && quantity > 0 && price >= 0) {
+                const item = { name, quantity, price };
+                items.push(item);
+                
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemQuantity').value = '1';
+                document.getElementById('itemPrice').value = '0';
+                
+                renderTable();
+            } else {
+                alert('Zəhmət olmasa, məhsul məlumatlarını düzgün daxil edin.');
+            }
+        });
 
-    function buildSchedule(principal, months){
-      let bal = principal; const rows=[];
-      const sd=(document.getElementById('startDate')?.value? new Date(document.getElementById('startDate').value): new Date());
-      const day=sd.getDate();
-      for(let i=1;i<=months;i++){
-        const d=new Date(sd); d.setMonth(d.getMonth()+i); d.setDate(day);
-        let pay = round2(principal/months); if(i===months) pay=round2(bal);
-        bal=round2(Math.max(0, bal-pay));
-        rows.push({i,date:d,monthly:pay,bal});
-      }
-      let html = '<table><thead><tr><th style="text-align:left">Ay</th><th>Tarix</th><th>Məbləğ</th><th>Qalıq</th></tr></thead><tbody>';
-      for(const r of rows){ html += `<tr><td style="text-align:left">${r.i}</td><td>${ddmmyyyy(r.date)}</td><td>${fmtAZN(r.monthly)}</td><td>${fmtAZN(r.bal)}</td></tr>`; }
-      html += '</tbody></table>'; return html;
-    }
+        // Cədvəli yeniləyən funksiya
+        function renderTable() {
+            itemsTbody.innerHTML = '';
+            items.forEach((item, index) => {
+                const row = document.createElement('tr');
+                const total = item.quantity * item.price;
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${total.toFixed(2)} AZN</td>
+                    <td>${(total).toFixed(2)} AZN</td>
+                    <td><button class="delete-btn" onclick="deleteItem(${index})">Sil</button></td>
+                `;
+                itemsTbody.appendChild(row);
+            });
+            calculateTotals();
+        }
 
-    function calc(){
-      ['risk','salary','oblig','addIncomeType','addIncomeAmt','manualDownAmt','months','price','custPhone','imei1','imei2'].forEach(id=>document.getElementById(id)?.classList.remove('invalid'));
-      const riskEl=document.getElementById('risk');
-      const salaryEl=document.getElementById('salary');
-      const obligEl=document.getElementById('oblig');
-      const monthsEl=document.getElementById('months');
-      const priceEl=document.getElementById('price');
-      const chk=document.getElementById('addIncomeChk');
-      const typeSel=document.getElementById('addIncomeType');
-      const amtInp=document.getElementById('addIncomeAmt');
+        // Məhsulu silən funksiya
+        function deleteItem(index) {
+            items.splice(index, 1);
+            renderTable();
+        }
 
-      const risk=riskEl?.value||''; const salaryStr=salaryEl?.value||''; const obligStr=obligEl?.value||'';
-      const months=monthsEl?.value||''; const priceVal=priceEl?.value||'';
-      const msgs=[];
-      if(!priceVal){ priceEl.classList.add('invalid'); msgs.push('Məhsul dəyərini daxil edin.'); }
-      if(!months){ monthsEl.classList.add('invalid'); msgs.push('Müddəti seçin.'); }
-      if(!risk){ riskEl.classList.add('invalid'); msgs.push('Risk qrupunu seçin.'); }
-      if(salaryStr===''){ salaryEl.classList.add('invalid'); msgs.push('Aylıq əmək haqqını daxil edin.'); }
-      if(obligStr===''){ obligEl.classList.add('invalid'); msgs.push('Digər öhdəlikləri daxil edin.'); }
+        // Yekun məbləğləri hesablayan funksiya
+        function calculateTotals() {
+            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const vat = subtotal * 0.18;
+            const total = subtotal + vat;
 
-      if(chk?.checked){
-        if(!typeSel.value){ typeSel.classList.add('invalid'); msgs.push('Əlavə gəlir növünü seçin.'); }
-        if(!amtInp.value){ amtInp.classList.add('invalid'); msgs.push('Əlavə gəlir məbləğini daxil edin.'); }
-      }
+            subtotalEl.textContent = subtotal.toFixed(2);
+            vatEl.textContent = vat.toFixed(2);
+            totalEl.textContent = total.toFixed(2);
+        }
+        
+        // Əsas sənəd hazırlayan funksiya
+        function generateDocument(type) {
+            if (items.length === 0) {
+                alert('Sənəd hazırlamaq üçün ən azı bir məhsul/xidmət əlavə edin.');
+                return;
+            }
+            
+            // Formalardakı bütün məlumatları yığırıq
+            const companyInfo = {
+                name: document.getElementById('companyName').value,
+                voen: document.getElementById('companyVoen').value,
+                address: document.getElementById('companyAddress').value,
+                bank: document.getElementById('companyBank').value.replace(/\n/g, '<br>')
+            };
+            const clientInfo = {
+                name: document.getElementById('clientName').value,
+                voen: document.getElementById('clientVoen').value,
+                address: document.getElementById('clientAddress').value
+            };
+            const docInfo = {
+                number: document.getElementById('docNumber').value,
+                date: new Date(document.getElementById('docDate').value).toLocaleDateString('az-AZ')
+            };
+            
+            // Sənəd növünə görə məzmunu hazırlayırıq
+            let documentTitle = '';
+            let contentHTML = '';
+            let signatureHTML = '';
 
-      if(msgs.length){ showWarn(msgs.join('\n')); return; }
+            // Məhsul cədvəlinin HTML-i
+            let itemsTableHTML = `
+                <table class="items-table" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px;">№</th>
+                            <th style="border: 1px solid #ddd; padding: 8px;">Adı</th>
+                            <th style="border: 1px solid #ddd; padding: 8px;">Miqdar</th>
+                            ${type !== 'act' ? `
+                            <th style="border: 1px solid #ddd; padding: 8px;">Vahidin qiyməti</th>
+                            <th style="border: 1px solid #ddd; padding: 8px;">Cəm</th>
+                            ` : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map((item, index) => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.quantity}</td>
+                                ${type !== 'act' ? `
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.price.toFixed(2)} AZN</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${(item.quantity * item.price).toFixed(2)} AZN</td>
+                                ` : ''}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
 
-      let extra = chk?.checked ? Math.max(0, Number(amtInp.value||0)) : 0;
-      const price=Number(priceVal||0);
-      const monthsNum=Number(months);
-      const salary=Number(salaryStr||0) + extra;
-      const oblig=Number(obligStr||0);
-      if(monthsNum<=0){ showWarn('Müddət ən az 1 ay olmalıdır.'); return; }
+            // Yekun məbləğlərin HTML-i (təhvil-təslim aktı xaric)
+            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const vat = subtotal * 0.18;
+            const total = subtotal + vat;
 
-      // İlkin ödəniş
-      const mdChk=document.getElementById('manualDownChk');
-      const mdInp=document.getElementById('manualDownAmt');
-      let {down, pct, net} = getDownPayment(price, risk, salary, oblig);
-      let manualUsed=false;
-      if(mdChk && mdChk.checked){
-        const val = Math.max(0, Math.min(price, Number(mdInp.value||0)));
-        if(isNaN(val)) { markInvalid(mdInp); return showWarn('İlkin ödəniş ədədi olmalıdır.'); }
-        down = round2(val); pct = price>0 ? (down/price) : 0; manualUsed=true;
-      }
+            let totalsHTML = `
+                <div class="totals" style="text-align: right; margin-top: 20px;">
+                    <p>Məbləğ (ƏDV-siz): <strong>${subtotal.toFixed(2)} AZN</strong></p>
+                    <p>ƏDV (18%): <strong>${vat.toFixed(2)} AZN</strong></p>
+                    <p style="font-size: 1.2em;">Yekun Məbləğ: <strong>${total.toFixed(2)} AZN</strong></p>
+                </div>
+            `;
+            
+            // Sənəd növünə görə fərqli hissələr
+            switch (type) {
+                case 'quote':
+                    documentTitle = 'Qiymət Təklifi';
+                    signatureHTML = `
+                        <div class="signature-area">
+                             <div class="signature-box">
+                                <p>${companyInfo.name}<br>(İmza / Möhür)</p>
+                             </div>
+                        </div>`;
+                    contentHTML = `${itemsTableHTML} ${totalsHTML} ${signatureHTML}`;
+                    break;
+                case 'act':
+                    documentTitle = 'Təhvil-Təslim Aktı';
+                    signatureHTML = `
+                        <p style="margin-top: 30px;">Tərəflər təsdiq edir ki, yuxarıda göstərilən xidmətlər/məhsullar tam və qənaətbəxş şəkildə təhvil verilmişdir və qarşılıqlı iddialar yoxdur.</p>
+                        <div class="signature-area">
+                             <div class="signature-box">
+                                <h3>Təhvil Verdi:</h3>
+                                <p>${companyInfo.name}<br>(İmza / Möhür)</p>
+                             </div>
+                             <div class="signature-box">
+                                <h3>Təhvil Aldı:</h3>
+                                <p>${clientInfo.name}<br>(İmza / Möhür)</p>
+                             </div>
+                        </div>`;
+                    contentHTML = `${itemsTableHTML} ${signatureHTML}`;
+                    break;
+                case 'invoice':
+                    documentTitle = 'Hesab-Faktura';
+                    signatureHTML = `
+                        <div style="margin-top: 40px;">
+                           <h3>Bank Rekvizitləri:</h3>
+                           <p>${companyInfo.bank}</p>
+                        </div>
+                        <div class="signature-area">
+                             <div class="signature-box">
+                                <p>İcraçı: ${companyInfo.name}<br>(İmza / Möhür)</p>
+                             </div>
+                        </div>`;
+                    contentHTML = `${itemsTableHTML} ${totalsHTML} ${signatureHTML}`;
+                    break;
+            }
 
-      let principal = round2(Math.max(0, price - down));
-      // Bərabər aylıq — 2 rəqəmdən yuvarlama və son ödənişdə düzəliş
-      let monthlyRaw = monthsNum>0 ? principal / monthsNum : 0;
-      let monthly = round2(monthlyRaw);
-      // DSR limitinə uyğunlaşdırma
-      const maxMonthly = round2(Math.max(0, net * MAX_DSR));
-      let autoAdj=false;
-      if(monthly > maxMonthly + 1e-9){
-        const requiredPrincipal = round2(maxMonthly * monthsNum);
-        const newDownRaw = price - requiredPrincipal;
-        const prevDown = down;
-        down = Math.min(price, Math.max(manualUsed? down : MIN_DOWN_AZN, Math.max(prevDown, newDownRaw)));
-        pct = price>0 ? (down/price) : 0;
-        principal = round2(Math.max(0, price - down));
-        monthlyRaw = monthsNum>0 ? principal / monthsNum : 0;
-        monthly = round2(monthlyRaw);
-        autoAdj=true;
-      }
+            // Bütün HTML-i birləşdirib ekrana çıxarırıq
+            outputDiv.innerHTML = `
+                <h2>${documentTitle} № ${docInfo.number}</h2>
+                <div class="document-info">
+                    <p><strong>Tarix:</strong> ${docInfo.date}</p>
+                </div>
+                <div class="output-header">
+                    <div>
+                        <h3>Göndərən:</h3>
+                        <p><strong>Şirkət:</strong> ${companyInfo.name}</p>
+                        <p><strong>VÖEN:</strong> ${companyInfo.voen}</p>
+                        <p><strong>Ünvan:</strong> ${companyInfo.address}</p>
+                    </div>
+                    <div>
+                        <h3>Alan:</h3>
+                        <p><strong>Şirkət:</strong> ${clientInfo.name}</p>
+                        <p><strong>VÖEN:</strong> ${clientInfo.voen}</p>
+                        <p><strong>Ünvan:</strong> ${clientInfo.address}</p>
+                    </div>
+                </div>
+                ${contentHTML}
+                <div style="text-align:center; margin-top: 40px;">
+                    <button id="printBtn" class="btn btn-primary" onclick="window.print()">Sənədi Çap Et</button>
+                </div>
+            `;
+            outputDiv.style.display = 'block';
+            outputDiv.scrollIntoView({ behavior: 'smooth' });
+        }
 
-      // Cədvəl
-      document.getElementById('scheduleWrap').innerHTML = buildSchedule(principal, monthsNum);
-
-      // Xülasə
-      const sumEl = document.getElementById('summary');
-      sumEl.innerHTML = `
-        <h3>Nəticə</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px">
-          <span class="pill">İlkin: <b>${fmtAZN(down)}</b> (${Math.round((pct||0)*100)}%)</span>
-          <span class="pill">Kredit məbləği: <b>${fmtAZN(principal)}</b></span>
-          <span class="pill">Aylıq ödəniş: <b>${fmtAZN(monthly)}</b></span>
-          <span class="pill">DSR limit: <b>${fmtAZN(maxMonthly)}</b></span>
-        </div>
-        ${autoAdj? '<div class="notice warn">Aylıq ödəniş DSR limitini aşdığı üçün ilkin ödəniş avtomatik artırıldı.</div>':''}
-      `;
-
-      showOk('Hesablandı.');
-      saveState();
-    }
-
-    // Hadisələr (kalkulyator)
-    document.getElementById('btnCalc').addEventListener('click', calc);
-    document.getElementById('btnReset').addEventListener('click', ()=>{ ['price','months','risk','salary','oblig','manualDownAmt','addIncomeAmt'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); ['manualDownChk','addIncomeChk'].forEach(id=>{const el=document.getElementById(id); if(el) el.checked=false;}); toggleManualDown(); toggleExtraIncome(); onIncomeTypeChange(); document.getElementById('summary').innerHTML=''; document.getElementById('scheduleWrap').innerHTML=''; document.getElementById('calcAlert').style.display='none'; document.getElementById('calcOk').style.display='none'; localStorage.removeItem('bk_calc_v2'); });
-    document.getElementById('manualDownChk').addEventListener('change', toggleManualDown);
-    document.getElementById('addIncomeChk').addEventListener('change', toggleExtraIncome);
-    document.getElementById('addIncomeType').addEventListener('change', onIncomeTypeChange);
-
-    // Finalize aç/bağla + çap (placeholder)
-    document.getElementById('btnFinalize')?.addEventListener('click', ()=> toggleFinalize(true));
-    document.getElementById('btnFinalizeClose')?.addEventListener('click', ()=> toggleFinalize(false));
-    document.getElementById('btnFinalizePrint')?.addEventListener('click', buildAndPrintContract);
-    
-    function validateFinalizeFields(){
-      const reqIds = ['custName','custPhone','prodName','idSerial','finCode','birthDate','address','imei1','contractNo','branch','currency','startDate','sellerRep'];
-      const missing=[]; reqIds.forEach(id=>{ const el=document.getElementById(id); if(!el) return; const v=(el.value||'').trim(); if(!v){ el.classList.add('invalid'); missing.push(id); }});
-      if(missing.length){ showWarn('Zəhmət olmasa müştəri və müqavilə məlumatlarını tamamlayın.'); return false; }
-      return true;
-    }
-
-    function collectCalc(){
-      const price=Number(document.getElementById('price').value||0);
-      const months=Number(document.getElementById('months').value||0);
-      const risk=document.getElementById('risk').value||'';
-      const salary=Number(document.getElementById('salary').value||0);
-      const oblig=Number(document.getElementById('oblig').value||0);
-      const mdChk=document.getElementById('manualDownChk');
-      const mdInp=document.getElementById('manualDownAmt');
-      let {down, pct, net} = getDownPayment(price, risk, salary, oblig);
-      if(mdChk?.checked){ const val=Math.max(0,Math.min(price,Number(mdInp.value||0))); if(!isNaN(val)) down=round2(val); }
-      const principal=round2(Math.max(0, price-down));
-      const monthly = months>0? round2(principal/months):0;
-      // schedule
-      const sd=(document.getElementById('startDate')?.value? new Date(document.getElementById('startDate').value): new Date());
-      const day=sd.getDate();
-      let bal=principal; const rows=[];
-      for(let i=1;i<=months;i++){
-        const d=new Date(sd); d.setMonth(d.getMonth()+i); d.setDate(day);
-        let pay=monthly; if(i===months) pay=round2(bal); bal=round2(Math.max(0, bal-pay));
-        rows.push({i,date:d,monthly:pay,bal});
-      }
-      return {price, months, risk, salary, oblig, down, pct, principal, monthly, rows};
-    }
-
-    function buildAndPrintContract(){
-      if(!validateFinalizeFields()) return;
-      const data = collectCalc();
-      const g = (id)=> (document.getElementById(id)?.value||'');
-      const bDate = ddmmyyyy(g('birthDate'));
-      const sDate = ddmmyyyy(g('startDate'));
-      const nowStr = ddmmyyyy(new Date());
-
-      const rowsHtml = data.rows.map(r=>`<tr><td>${r.i}</td><td>${ddmmyyyy(r.date)}</td><td>${fmtAZN(r.monthly)}</td><td>${fmtAZN(r.bal)}</td></tr>`).join('');
-
-      const html = `
-        <div>
-          <div class="print-title">Qiymət razılaşdırma protokolu</div>
-          <div class="print-subtop"><div>Tarix: <b>${nowStr}</b></div><div>Müqavilə №: <b>${g('contractNo')}</b></div><div>Filial: <b>${g('branch')}</b></div></div>
-
-          <table class="print-table" style="margin:6mm 0 4mm">
-            <tr><th style="width:36%">Müştəri</th><td>${g('custName')}</td></tr>
-            <tr><th>Əlaqə</th><td>${g('custPhone')}</td></tr>
-            <tr><th>Ş/V seriya №</th><td>${g('idSerial')}</td></tr>
-            <tr><th>FIN</th><td>${g('finCode')}</td></tr>
-            <tr><th>Doğum tarixi</th><td>${bDate}</td></tr>
-            <tr><th>Ünvan</th><td>${g('address')}</td></tr>
-          </table>
-
-          <table class="print-table" style="margin:4mm 0 6mm">
-            <tr><th style="width:36%">Məhsul</th><td>${g('prodName')}</td></tr>
-            <tr><th>IMEI 1</th><td>${g('imei1')}</td></tr>
-            ${g('imei2')? `<tr><th>IMEI 2</th><td>${g('imei2')}</td></tr>`:''}
-            <tr><th>Məhsul dəyəri</th><td>${fmtAZN(data.price)} (${g('currency')})</td></tr>
-            <tr><th>İlkin ödəniş</th><td>${fmtAZN(data.down)}</td></tr>
-            <tr><th>Kredit məbləği</th><td>${fmtAZN(data.principal)}</td></tr>
-            <tr><th>Müddət</th><td>${data.months} ay</td></tr>
-            <tr><th>Aylıq ödəniş</th><td>${fmtAZN(data.monthly)}</td></tr>
-            <tr><th>Kreditin verilmə tarixi</th><td>${sDate}</td></tr>
-            <tr><th>Satıcı nümayəndə</th><td>${g('sellerRep')}</td></tr>
-          </table>
-
-          <div class="print-h2">Ödəniş cədvəli</div>
-          <table class="print-table">
-            <thead><tr><th>Ay</th><th>Tarix</th><th>Məbləğ</th><th>Qalıq</th></tr></thead>
-            <tbody>${rowsHtml}</tbody>
-          </table>
-
-          <div class="sign-cols">
-            <div class="sign"><div class="sigcap">Alıcı (Müştəri):</div><span class="sigline"></span></div>
-            <div class="sign"><div class="sigcap">Satıcı (Şirkət):</div><span class="sigline"></span></div>
-          </div>
-          <div class="kecik" style="margin-top:6mm">Qeyd: Bu protokol tərəflərin imzası ilə qüvvəyə minir.</div>
-        </div>`;
-
-      const holder = document.getElementById('printA4');
-      holder.innerHTML = html;
-      document.getElementById('printDoc').style.display='block';
-      window.print();
-      setTimeout(()=>{ document.getElementById('printDoc').style.display='none'; }, 0);
-    }
-    document.getElementById('btnPrint')?.addEventListener('click', ()=>{ window.print(); });
-
-    // ==== NAV ====
-    function showScreen(which){
-      const calc=document.getElementById('screen-calculator');
-      const pricing=document.getElementById('screen-pricing');
-      const bCalc=document.getElementById('btnNavCalc');
-      const bPrice=document.getElementById('btnNavPricing');
-      const isCalc = which==='calc';
-      calc.style.display = isCalc? 'block':'none';
-      pricing.style.display = isCalc? 'none':'block';
-      bCalc.classList.toggle('active', isCalc);
-      bPrice.classList.toggle('active', !isCalc);
-      if(!isCalc) document.getElementById('pCategory')?.focus();
-    }
-    document.getElementById('btnNavCalc').addEventListener('click',()=>showScreen('calc'));
-    document.getElementById('btnNavPricing').addEventListener('click',()=>showScreen('pricing'));
-
-    // ==== SATIŞ QİYMƏTİ LOGİKASI ====
-    function tierPrices(cost){ if(cost <= 15) return {cash: 2.5, credit: 2.5}; if(cost <= 60) return {cash: 1.7, credit: 2.0}; if(cost <= 90) return {cash: 1.5, credit: 1.8}; if(cost <= 500) return {cash: 1.3, credit: 1.5}; return {cash: 1.3, credit: 1.4}; }
-    function formatAZN2(n){ return (new Intl.NumberFormat('az-AZ',{style:'currency',currency:'AZN',maximumFractionDigits:2})).format(n||0); }
-
-    const pCategory = document.getElementById('pCategory');
-    const pCost = document.getElementById('pCost');
-    const pCash = document.getElementById('pCash');
-    const pCredit = document.getElementById('pCredit');
-    const pAlert = document.getElementById('pAlert');
-
-    function resetPricing(){ if(pCash) pCash.textContent='—'; if(pCredit) pCredit.textContent='—'; if(pAlert) pAlert.style.display='none'; }
-
-    pCategory?.addEventListener('change', ()=>{ resetPricing(); if(pCategory.value){ pCost.disabled=false; pCost.focus(); } else { pCost.value=''; pCost.disabled=true; } });
-    pCost?.addEventListener('input', ()=>{
-      resetPricing();
-      const cat = pCategory.value; const cost = Number(pCost.value||0);
-      if(!cat){ pAlert.style.display='block'; pAlert.textContent='Əvvəlcə kateqoriyanı seçin.'; return; }
-      if(!(cost>0)) return;
-      let cash=0, credit=0;
-      if(cat==='phone'){ cash = cost * 1.17; credit = cost * 1.30; }
-      else { const t=tierPrices(cost); cash = cost * t.cash; credit = cost * t.credit; }
-      pCash.textContent = formatAZN2(round2(cash));
-      pCredit.textContent = formatAZN2(round2(credit));
-    });
-
-    // Başlanğıc olaraq kalkulyator açıq
-    showScreen('calc');
-  </script>
+    </script>
 </body>
 </html>
