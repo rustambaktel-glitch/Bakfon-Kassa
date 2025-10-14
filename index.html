@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru (Dark Mode)</title>
+    <title>Sənəd Generatoru (Excel Importlu)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            /* Yeni "Dark Mode" rəng palitrası */
             --primary-color: #4299E1; /* Bright Blue Accent */
             --primary-hover-color: #63B3ED;
             --background-color: #1A202C; /* Very Dark Slate */
@@ -84,13 +84,24 @@
             width:100%; transition: background-color 0.2s;
         }
         .btn:hover { background-color: var(--primary-hover-color); }
+        .custom-file-upload {
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            background-color: var(--secondary-color);
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="file"] { display: none; }
         
         #saved-projects-list ul { list-style: none; padding: 0; margin: 0; }
         #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
         .project-actions button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 5px 10px; margin-left: 5px; cursor: pointer; transition: all 0.2s; }
         .project-actions button:hover { border-color: var(--primary-color); color: var(--primary-color); }
         
-        /* Modal Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: var(--secondary-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 8.5in; height: 90%; max-height: 11in; box-shadow: 0 5px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid var(--border-color); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
@@ -102,7 +113,6 @@
         #printModalBtn { background-color: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
         #printModalBtn:hover { background-color: var(--primary-hover-color); }
         
-        /* Corporate Document Styles (FORCE WHITE BACKGROUND) */
         .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; }
         .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; }
         .doc-header img { max-width: 150px; max-height: 70px; }
@@ -165,6 +175,18 @@
                 <table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table>
                 <div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div>
             </fieldset>
+
+            <fieldset>
+                <legend>Excel-dən Məhsul Importu</legend>
+                <label for="excel-input" class="custom-file-upload">
+                    Excel Faylı Seçin (.xlsx, .xls)
+                </label>
+                <input type="file" id="excel-input" accept=".xlsx, .xls">
+                <p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">
+                    Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.
+                </p>
+            </fieldset>
+
             <button class="btn" id="saveProjectBtn">Sənədləri Hazırla və Yadda Saxla</button>
         </div>
 
@@ -187,16 +209,12 @@
                     <button class="modal-close" id="closeModalBtn">&times;</button>
                 </div>
             </div>
-            <div class="modal-body" id="modalBody">
-                </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
 
     <script>
-    // --- BÜTÜN JAVASCRIPT KODU DƏYİŞMƏDƏN QALIR ---
-    // Funksionallıqda heç bir dəyişiklik edilmədiyi üçün əvvəlki JavaScript kodunun
-    // eynisini bura yapışdırmaq olar. Sadəcə CSS (style) hissəsində dəyişiklik edilib.
     document.addEventListener('DOMContentLoaded', () => {
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
@@ -204,6 +222,7 @@
         const subtotalEl = document.getElementById('subtotal');
         const saveProjectBtn = document.getElementById('saveProjectBtn');
         const savedProjectsList = document.querySelector('#saved-projects-list ul');
+        const excelInput = document.getElementById('excel-input');
         
         const viewModal = document.getElementById('viewModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
@@ -215,13 +234,48 @@
         let currentViewingProject = null;
         let currentEditingProjectId = null;
 
-        function getProjects() {
-            return JSON.parse(localStorage.getItem('projects') || '[]');
-        }
-        function saveProjects(projects) {
-            localStorage.setItem('projects', JSON.stringify(projects));
-            renderSavedProjects();
-        }
+        // --- EXCEL IMPORT FUNKSİYASI ---
+        excelInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Məlumatları array-lərin array-i kimi oxuyuruq
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    jsonData.forEach((row, index) => {
+                        // Boş sətirləri və ya düzgün formatda olmayanları nəzərə almırıq
+                        if (row.length >= 3 && row[0] && !isNaN(parseFloat(row[1])) && !isNaN(parseFloat(row[2]))) {
+                            items.push({
+                                name: row[0],
+                                quantity: parseFloat(row[1]),
+                                price: parseFloat(row[2])
+                            });
+                        }
+                    });
+
+                    renderTable(); // Cədvəli yeniləyirik
+                    alert(`${jsonData.length} sətirdən məlumatlar uğurla əlavə edildi!`);
+                } catch (error) {
+                    console.error("Excel faylını oxuma xətası:", error);
+                    alert("Faylı oxumaq mümkün olmadı. Zəhmət olmasa faylın formatını yoxlayın.");
+                } finally {
+                    // Eyni faylı yenidən seçə bilmək üçün input-u təmizləyirik
+                    event.target.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+        
+        function getProjects() { return JSON.parse(localStorage.getItem('projects') || '[]'); }
+        function saveProjects(projects) { localStorage.setItem('projects', JSON.stringify(projects)); renderSavedProjects(); }
 
         function renderSavedProjects() {
             const projects = getProjects();
