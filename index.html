@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru (Excel Importlu)</title>
+    <title>Sənəd Generatoru (Etibarlı Çap)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -117,16 +117,15 @@
         .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; }
         .doc-header img { max-width: 150px; max-height: 70px; }
         .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; }
-        .doc-parties { display: flex; justify-content: space-between; margin-top: 25px; } .doc-parties div { width: 48%; line-height: 1.5; }
+        .doc-parties { display: flex; justify-content: space-between; margin-top: 25px; } .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; }
         .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
         .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; } .doc-table th { background-color: #f8f9fa; }
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
-        .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; }
+        .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; }
         .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
         @media print {
-            body * { visibility: hidden; }
-            .printable-area, .printable-area * { visibility: visible; }
-            .printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+            body { background-color: white; }
+            .printable-area { box-shadow: none; border: none; }
         }
     </style>
 </head>
@@ -136,6 +135,15 @@
         <div class="form-container">
             <h1>Sənəd Generatoru</h1>
             <input type="hidden" id="projectId">
+            
+            <fieldset>
+                <legend>Bank Rekvizitləri</legend>
+                <div class="form-group full-width">
+                    <label>Bank və hesab məlumatlarınız (Hesab-Faktura üçün)</label>
+                    <textarea id="companyBank" rows="4">Bank: Kapital Bank ASC&#10;H/H: AZ12345...&#10;M/H: AZ12345...&#1O;Kod: 200100</textarea>
+                </div>
+            </fieldset>
+
             <fieldset>
                 <legend>Şirkət Məlumatları</legend>
                 <div class="form-grid">
@@ -143,7 +151,6 @@
                     <div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" value="TechSolutions MMC"></div>
                     <div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" value="1234567890"></div>
                     <div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" value="Bakı şəh., Nizami küç. 1"></div>
-                    <div class="form-group full-width"><label>Bank rekvizitləri</label><textarea id="companyBank" rows="3">Bank: Kapital Bank ASC&#10;H/H: AZ12345...&#10;M/H: AZ12345...&#10;Kod: 200100</textarea></div>
                 </div>
             </fieldset>
 
@@ -216,6 +223,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Bütün elementlərin seçilməsi...
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
@@ -223,22 +231,20 @@
         const saveProjectBtn = document.getElementById('saveProjectBtn');
         const savedProjectsList = document.querySelector('#saved-projects-list ul');
         const excelInput = document.getElementById('excel-input');
-        
         const viewModal = document.getElementById('viewModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
         const modalTabs = document.getElementById('modalTabs');
         const modalBody = document.getElementById('modalBody');
         const printModalBtn = document.getElementById('printModalBtn');
 
+        // Qlobal dəyişənlər...
         let items = [];
         let currentViewingProject = null;
         let currentEditingProjectId = null;
 
-        // --- EXCEL IMPORT FUNKSİYASI ---
+        // Excel import funksiyası...
         excelInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -246,30 +252,18 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Məlumatları array-lərin array-i kimi oxuyuruq
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-                    jsonData.forEach((row, index) => {
-                        // Boş sətirləri və ya düzgün formatda olmayanları nəzərə almırıq
+                    let importedCount = 0;
+                    jsonData.forEach((row) => {
                         if (row.length >= 3 && row[0] && !isNaN(parseFloat(row[1])) && !isNaN(parseFloat(row[2]))) {
-                            items.push({
-                                name: row[0],
-                                quantity: parseFloat(row[1]),
-                                price: parseFloat(row[2])
-                            });
+                            items.push({ name: row[0], quantity: parseFloat(row[1]), price: parseFloat(row[2]) });
+                            importedCount++;
                         }
                     });
-
-                    renderTable(); // Cədvəli yeniləyirik
-                    alert(`${jsonData.length} sətirdən məlumatlar uğurla əlavə edildi!`);
-                } catch (error) {
-                    console.error("Excel faylını oxuma xətası:", error);
-                    alert("Faylı oxumaq mümkün olmadı. Zəhmət olmasa faylın formatını yoxlayın.");
-                } finally {
-                    // Eyni faylı yenidən seçə bilmək üçün input-u təmizləyirik
-                    event.target.value = '';
-                }
+                    renderTable();
+                    alert(`${importedCount} məhsul uğurla əlavə edildi!`);
+                } catch (error) { console.error("Excel faylını oxuma xətası:", error); alert("Faylı oxumaq mümkün olmadı. Zəhmət olmasa faylın formatını yoxlayın.");
+                } finally { event.target.value = ''; }
             };
             reader.readAsArrayBuffer(file);
         });
@@ -302,169 +296,129 @@
             const projects = getProjects();
             let lastNum = 0;
             if (projects.length > 0) {
-                 lastNum = Math.max(...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0)));
+                 lastNum = Math.max(0, ...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0)));
             }
             document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`;
         }
         
         saveProjectBtn.addEventListener('click', () => {
-            if (items.length === 0) {
-                alert('Layihə yaratmaq üçün məhsul/xidmət əlavə edin.');
-                return;
-            }
-
+            if (items.length === 0) { alert('Layihə yaratmaq üçün məhsul/xidmət əlavə edin.'); return; }
             const rawData = {
                 companyInfo: {
-                    logo: document.getElementById('companyLogo').value,
-                    name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value,
+                    logo: document.getElementById('companyLogo').value, name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value,
                     address: document.getElementById('companyAddress').value, bank: document.getElementById('companyBank').value
                 },
-                clientInfo: {
-                    name: document.getElementById('clientName').value, voen: document.getElementById('clientVoen').value, address: document.getElementById('clientAddress').value
-                },
-                docInfo: {
-                    number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value
-                },
+                clientInfo: { name: document.getElementById('clientName').value, voen: document.getElementById('clientVoen').value, address: document.getElementById('clientAddress').value },
+                docInfo: { number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value },
                 items: items
             };
-            
-            const generatedDocs = {
-                quote: generateDocumentHTML('quote', rawData),
-                act: generateDocumentHTML('act', rawData),
-                invoice: generateDocumentHTML('invoice', rawData)
-            };
-
+            const generatedDocs = { quote: generateDocumentHTML('quote', rawData), act: generateDocumentHTML('act', rawData), invoice: generateDocumentHTML('invoice', rawData) };
             const projects = getProjects();
             if (currentEditingProjectId) {
                 const projectIndex = projects.findIndex(p => p.id === currentEditingProjectId);
-                if (projectIndex > -1) {
-                    projects[projectIndex].rawData = rawData;
-                    projects[projectIndex].generatedDocs = generatedDocs;
-                    projects[projectIndex].clientInfo = rawData.clientInfo;
-                    projects[projectIndex].docInfo = rawData.docInfo;
-                }
+                if (projectIndex > -1) { projects[projectIndex] = {...projects[projectIndex], rawData, generatedDocs, clientInfo: rawData.clientInfo, docInfo: rawData.docInfo}; }
             } else {
-                const newProject = {
-                    id: `${Date.now()}`,
-                    timestamp: Date.now(),
-                    clientInfo: rawData.clientInfo,
-                    docInfo: rawData.docInfo,
-                    rawData: rawData,
-                    generatedDocs: generatedDocs
-                };
-                projects.push(newProject);
+                projects.push({
+                    id: `${Date.now()}`, timestamp: Date.now(), clientInfo: rawData.clientInfo,
+                    docInfo: rawData.docInfo, rawData: rawData, generatedDocs: generatedDocs
+                });
             }
-            
             saveProjects(projects);
             resetForm();
         });
-
+        
         function generateDocumentHTML(type, data) {
             const { companyInfo, clientInfo, docInfo, items } = data;
             const docDate = new Date(docInfo.rawDate).toLocaleDateString('az-AZ', { year: 'numeric', month: 'long', day: 'numeric' });
-            
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
-            
             let docTitle = '';
             switch(type){
                 case 'quote': docTitle = 'Qiymət Təklifi'; break;
                 case 'act': docTitle = 'Təhvil-Təslim Aktı'; break;
                 case 'invoice': docTitle = 'Hesab-Faktura'; break;
             }
-            
-            const itemsTableHTML = `
-                <table class="doc-table">
-                    <thead><tr><th>№</th><th>Adı</th><th>Miqdar</th>
-                        ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}
-                    </tr></thead>
-                    <tbody>${items.map((item, index) => `
-                        <tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td>
-                            ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}
-                        </tr>`).join('')}
-                    </tbody></table>`;
-            
-            const totalsHTML = type !== 'act' ? `
-                <div class="doc-totals"><table>
-                    <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
-                    <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
-                    <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
+            let bankDetailsHTML = '';
+            if (type === 'invoice' && companyInfo.bank) { bankDetailsHTML = `<br><br><strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank.replace(/\n/g, '<br>')}</small>`; }
+            const itemsTableHTML = `<table class="doc-table"><thead><tr><th>№</th><th>Adı</th><th>Miqdar</th>
+                ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}</tr></thead>
+                <tbody>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td>
+                ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}</tr>`).join('')}
+                </tbody></table>`;
+            const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table>
+                <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
+                <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
+                <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
                 </table></div>` : '';
-
             const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;">
                 <div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
-                <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div>
-                </div>` : `<div class="doc-footer" style="display:flex; justify-content:space-between;">
-                <div>${type === 'invoice' ? `<strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank.replace(/\n/g, '<br>')}</small>`: ''}</div>
-                <div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
-                </div>`;
-            
+                <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>`
+                : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;">
+                <strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`;
             return `<div class="printable-area">
-                <div class="doc-header">
-                    <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div>
-                    <div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div>
-                </div>
+                <div class="doc-header"><div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div>
+                <div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div></div>
                 <div class="doc-parties">
-                    <div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div>
-                    <div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div>
-                </div>
-                ${itemsTableHTML} ${totalsHTML} ${footerHTML}
-            </div>`;
+                <div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}${bankDetailsHTML}</div>
+                <div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div></div>
+                ${itemsTableHTML}${totalsHTML}${footerHTML}</div>`;
         }
         
         function resetForm() {
             document.querySelector('.form-container').reset();
-            items = [];
-            currentEditingProjectId = null;
+            items = []; currentEditingProjectId = null;
             saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
-            renderTable();
-            docDateInput.valueAsDate = new Date();
-            updateDocNumber();
-        }
-
-        window.viewProject = function(id) {
-            const projects = getProjects();
-            currentViewingProject = projects.find(p => p.id === id);
-            if (!currentViewingProject) return;
-            
-            viewModal.style.display = 'flex';
-            showDocumentInModal('quote');
-        }
-
-        function showDocumentInModal(type) {
-            modalBody.innerHTML = currentViewingProject.generatedDocs[type];
-            modalTabs.querySelectorAll('button').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.type === type);
-            });
+            renderTable(); docDateInput.valueAsDate = new Date(); updateDocNumber();
         }
         
-        modalTabs.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                showDocumentInModal(e.target.dataset.type);
+        window.viewProject = function(id) {
+            const projects = getProjects(); currentViewingProject = projects.find(p => p.id === id);
+            if (!currentViewingProject) return;
+            viewModal.style.display = 'flex'; showDocumentInModal('quote');
+        }
+        function showDocumentInModal(type) {
+            modalBody.innerHTML = currentViewingProject.generatedDocs[type];
+            modalTabs.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
+        }
+        modalTabs.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') showDocumentInModal(e.target.dataset.type); });
+        closeModalBtn.addEventListener('click', () => viewModal.style.display = 'none');
+        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) viewModal.style.display = 'none'; });
+        
+        // --- YENİ VƏ ETİBARLI ÇAP FUNKSİYASI ---
+        printModalBtn.addEventListener('click', () => {
+            const printContent = modalBody.querySelector('.printable-area').outerHTML;
+            const styles = document.head.querySelectorAll('style');
+            
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write('<!DOCTYPE html><html><head><title>Print</title>');
+                
+                // Bütün stilləri yeni pəncərəyə köçürürük
+                styles.forEach(style => {
+                    printWindow.document.write(style.outerHTML);
+                });
+                
+                printWindow.document.write('</head><body>');
+                printWindow.document.write(printContent);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                
+                // Məzmunun və stillərin tam yüklənməsini gözləyirik
+                setTimeout(() => {
+                    printWindow.focus();
+                    printWindow.print();
+                    // İstifadəçinin çapdan sonra pəncərəni özünün bağlaması daha yaxşı təcrübədir.
+                    // printWindow.close(); 
+                }, 500); // 500ms gözləmə müddəti stabil işləmə üçün kifayətdir.
+            } else {
+                alert("Popup pəncərələr bloklanıb. Zəhmət olmasa, bu sayt üçün popup-lara icazə verin.");
             }
         });
 
-        closeModalBtn.addEventListener('click', () => viewModal.style.display = 'none');
-        viewModal.addEventListener('click', (e) => {
-            if (e.target === viewModal) viewModal.style.display = 'none';
-        });
-
-        printModalBtn.addEventListener('click', () => {
-             const printFrame = document.createElement('iframe');
-             printFrame.style.display = 'none';
-             document.body.appendChild(printFrame);
-             printFrame.contentDocument.write('<html><head><title>Print</title></head><body>' + modalBody.querySelector('.printable-area').innerHTML + '</body></html>');
-             printFrame.contentDocument.close();
-             printFrame.contentWindow.print();
-             document.body.removeChild(printFrame);
-        });
 
         window.loadProjectForEditing = function(id) {
-            const projects = getProjects();
-            const project = projects.find(p => p.id === id);
-            if (!project) return;
-            
+            const project = getProjects().find(p => p.id === id); if (!project) return;
             const data = project.rawData;
             document.getElementById('companyLogo').value = data.companyInfo.logo || '';
             document.getElementById('companyName').value = data.companyInfo.name;
@@ -476,19 +430,14 @@
             document.getElementById('clientAddress').value = data.clientInfo.address;
             document.getElementById('docNumber').value = data.docInfo.number;
             document.getElementById('docDate').value = data.docInfo.rawDate;
-            
-            items = data.items;
-            renderTable();
-            
+            items = data.items; renderTable();
             currentEditingProjectId = id;
             saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
         }
         
         window.deleteProject = function(id) {
             if (!confirm("Bu layihəni və ona aid bütün sənədləri silməyə əminsiniz?")) return;
-            let projects = getProjects();
-            projects = projects.filter(p => p.id !== id);
-            saveProjects(projects);
+            saveProjects(getProjects().filter(p => p.id !== id));
         }
 
         docDateInput.valueAsDate = new Date();
