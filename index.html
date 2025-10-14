@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru (Tema Seçimli)</title>
+    <title>Sənəd Generatoru - Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -11,15 +11,15 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        /* YENİLƏNMİŞ İşıqlı Tema (Standart) */
+        /* YENİLƏNMİŞ İşıqlı/Yaşıl Tema (Standart) */
         :root {
-            --primary-color: #2563EB; /* Daha tünd mavi */
-            --primary-hover-color: #1D4ED8;
-            --background-color: #F1F5F9; /* Açıq boz fon */
-            --secondary-color: #FFFFFF; /* Panellər üçün ağ */
+            --primary-color: #38A169; /* Yaşıl */
+            --primary-hover-color: #2F855A;
+            --background-color: #F0FDF4; /* Çox Açıq Yaşıl Fon */
+            --secondary-color: #FFFFFF;
             --border-color: #E2E8F0;
             --text-color: #1A202C;
-            --text-muted-color: #64748B;
+            --text-muted-color: #4A5568;
             --danger-color: #E53E3E;
             --input-bg-color: #FFFFFF;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -27,8 +27,8 @@
 
         /* Qaranlıq Tema Stili */
         body.dark-theme {
-            --primary-color: #4299E1;
-            --primary-hover-color: #63B3ED;
+            --primary-color: #48BB78;
+            --primary-hover-color: #38A169;
             --background-color: #1A202C;
             --secondary-color: #2D3748;
             --border-color: #4A5568;
@@ -37,94 +37,83 @@
             --input-bg-color: #1A202C;
         }
 
+        *, *::before, *::after { box-sizing: border-box; }
         body { font-family: var(--font-family); background-color: var(--background-color); color: var(--text-color); margin: 0; font-size: 14px; transition: background-color 0.3s, color 0.3s; }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding: 25px; height: 100vh; box-sizing: border-box; }
-        .form-container, .sidebar { background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; overflow-y: auto; height: calc(100vh - 50px); transition: background-color 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-        h1, h2 { color: var(--text-color); margin-top: 0; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        h1 { font-size: 24px; margin-bottom: 25px; color: var(--text-color); }
-        h2 { font-size: 20px; margin-bottom: 20px; text-align: left; }
-        fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .dashboard-layout { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+        
+        .sidebar { background-color: var(--secondary-color); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li button { background-color: transparent; color: var(--text-muted-color); border: none; border-radius: 8px; padding: 12px; font-size: 16px; font-weight: 500; cursor: pointer; text-align: left; width: 100%; margin-bottom: 10px; transition: background-color 0.2s, color 0.2s; display: flex; align-items: center; gap: 10px; }
+        .sidebar-menu li button:hover { background-color: color-mix(in srgb, var(--primary-color) 10%, transparent); color: var(--primary-color); }
+        .sidebar-menu li button.active { background-color: var(--primary-color); color: white; }
+        .sidebar-footer { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        #settings-btn { background: none; border: none; cursor: pointer; color: var(--text-muted-color); font-size: 24px; padding: 5px; border-radius: 50%; }
+        #settings-btn:hover { background-color: var(--background-color); }
+
+        .main-content { padding: 30px; overflow-y: auto; }
+        h1 { font-size: 28px; margin: 0 0 30px 0; color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: var(--secondary-color); }
         legend { font-weight: 600; color: var(--primary-color); padding: 0 10px; margin-left: 5px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-muted-color); }
-        input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); transition: all 0.2s ease-in-out; }
-        input#docDate { background-color: var(--input-bg-color) !important; color: var(--text-color) !important; }
-        input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 30%, transparent); }
-        .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
-        .items-table th { background-color: var(--background-color); font-weight: 600; }
-        .delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 16px; }
-        .totals { margin-top: 15px; text-align: right; }
-        .btn { padding: 12px 25px; font-size: 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; color: #ffffff; background-color: var(--primary-color); width:100%; transition: background-color 0.2s; }
-        .btn:hover { background-color: var(--primary-hover-color); }
-        .custom-file-upload { border: 1px solid var(--border-color); display: inline-block; padding: 8px 15px; cursor: pointer; border-radius: 6px; background-color: var(--secondary-color); text-align: center; width: 100%; box-sizing: border-box; }
-        #saved-projects-list ul { list-style: none; padding: 0; margin: 0; }
-        #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .project-actions button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 5px 10px; margin-left: 5px; cursor: pointer; transition: all 0.2s; }
-        .project-actions button:hover { border-color: var(--primary-color); color: var(--primary-color); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--secondary-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 8.5in; height: 90%; max-height: 11in; box-shadow: 0 5px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid var(--border-color); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        .modal-tabs { display: flex; gap: 10px; }
-        .modal-tabs button { padding: 8px 15px; border: 1px solid var(--border-color); background: var(--secondary-color); border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-muted-color); }
-        .modal-tabs button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } .form-group.full-width { grid-column: 1 / -1; } label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-muted-color); } input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); transition: all 0.2s ease-in-out; } input#docDate { background-color: var(--input-bg-color) !important; color: var(--text-color) !important; } input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 30%, transparent); } .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; } .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; } .items-table th { background-color: var(--background-color); font-weight: 600; } .delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 16px; } .totals { margin-top: 15px; text-align: right; } .btn { padding: 12px 25px; font-size: 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; color: #ffffff; background-color: var(--primary-color); width:100%; transition: background-color 0.2s; } .btn:hover { background-color: var(--primary-hover-color); } .custom-file-upload { border: 1px solid var(--border-color); display: inline-block; padding: 8px 15px; cursor: pointer; border-radius: 6px; background-color: var(--secondary-color); text-align: center; width: 100%; box-sizing: border-box; }
+        #projects-list-view ul { list-style: none; padding: 0; margin: 0; }
+        #projects-list-view li { background-color: var(--secondary-color); padding: 15px; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, transform 0.2s; border: 1px solid var(--border-color); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        #projects-list-view li:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--primary-color); }
+        .project-view-header { display: flex; justify-content: space-between; align-items: center; background: var(--secondary-color); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .project-view-tabs { display: flex; gap: 10px; } .project-view-tabs button { padding: 8px 15px; border: 1px solid var(--border-color); background: var(--secondary-color); border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-muted-color); } .project-view-tabs button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .project-view-body { background: color-mix(in srgb, var(--background-color) 50%, #525252); padding: 20px; border-radius: 6px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-start; padding-top: 5%; z-index: 1000; }
+        .modal-content { background: var(--secondary-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
         .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted-color); }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 20px; background: color-mix(in srgb, var(--background-color) 50%, #525252); margin-top: 15px; border-radius: 6px; }
-        #printModalBtn { background-color: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
-        #printModalBtn:hover { background-color: var(--primary-hover-color); }
-        .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; }
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; }
-        .doc-header img { max-width: 150px; max-height: 70px; }
-        .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; }
-        .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
-        .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } 
-        .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; overflow-wrap: break-word; word-break: break-all; }
-        .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
-        .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; } .doc-table th { background-color: #f8f9fa; }
-        .doc-totals { margin-top: 25px; float: right; width: 250px; }
-        .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; }
-        .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
-        .theme-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .theme-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(26px); }
-        @media print {
-            body { background-color: white; margin: 0; }
-            .printable-area { box-shadow: none; border: none; padding: 0; margin-top: 40px; }
-        }
+        .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; } .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; } .doc-header img { max-width: 150px; max-height: 70px; } .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; } .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; } .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; overflow-wrap: break-word; word-break: break-all; } .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; } .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; } .doc-table th { background-color: #f8f9fa; } .doc-totals { margin-top: 25px; float: right; width: 250px; } .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; } .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
+        .theme-switch { position: relative; display: inline-block; width: 50px; height: 24px; } .theme-switch input { opacity: 0; width: 0; height: 0; } .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; } .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; } input:checked + .slider { background-color: var(--primary-color); } input:checked + .slider:before { transform: translateX(26px); }
+        @media print { body { background-color: white; margin: 0; } .printable-area { box-shadow: none; border: none; padding: 0; margin-top: 40px; } }
     </style>
 </head>
 <body>
-    <div class="main-layout">
-        <div class="form-container">
-            <h1>Sənəd Generatoru</h1>
-            <input type="hidden" id="projectId">
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><button id="nav-generator"><span>&#43;</span> Yeni Sənəd Yarat</button></li>
+                <li><button id="nav-projects"><span>&#128193;</span> Saxlanılan Layihələr</button></li>
+            </ul>
+            <div class="sidebar-footer">
+                <label class="theme-switch" title="Temanı dəyiş"><input type="checkbox" id="theme-toggle"><span class="slider"></span></label>
+                <button id="settings-btn" title="Parametrlər">⚙️</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="generator-view">
+                <h1>Yeni Sənəd</h1>
+                <input type="hidden" id="projectId">
+                <fieldset><legend>Müştəri Məlumatları</legend><div class="form-grid"><div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName"></div><div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen"></div><div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress"></div></div></fieldset>
+                <fieldset><legend>Sənəd Məlumatları</legend><div class="form-grid"><div class="form-group"><label>Sənəd Nömrəsi</label><input type="text" id="docNumber"></div><div class="form-group"><label>Tarix</label><input type="text" id="docDate" placeholder="Tarixi seçin..."></div></div></fieldset>
+                <fieldset><legend>Məhsullar / Xidmətlər</legend><div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 10px;"><div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div><div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div><div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div><button id="addItemBtn" style="padding: 10px; font-size: 20px; border: none; border-radius: 6px; cursor: pointer; color: white; background-color: var(--primary-color); line-height: 1;">+</button></div><table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table><div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div></fieldset>
+                <fieldset><legend>Excel-dən Məhsul Importu</legend><label for="excel-input" class="custom-file-upload">Excel Faylı Seçin (.xlsx, .xls)</label><input type="file" id="excel-input" accept=".xlsx, .xls"><p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.</p></fieldset>
+                <button class="btn" id="saveProjectBtn">Sənədləri Hazırla və Yadda Saxla</button>
+            </div>
+
+            <div id="projects-list-view" style="display: none;"><h1>Saxlanılan Layihələr</h1><div id="saved-projects-list"><ul></ul></div></div>
+            <div id="project-detail-view" style="display: none;"></div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="settings-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Parametrlər (Satıcı Məlumatları)</h2><button class="modal-close" id="settings-close-btn">&times;</button></div>
             <fieldset><legend>Bank Rekvizitləri</legend><div class="form-group full-width"><label>Bank və hesab məlumatlarınız</label><textarea id="companyBank" rows="4"></textarea></div></fieldset>
             <fieldset><legend>Şirkət Məlumatları</legend><div class="form-grid"><div class="form-group full-width"><label for="companyLogo">Şirkət Loqo URL</label><input type="text" id="companyLogo" placeholder="https://example.com/logo.png"></div><div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" placeholder="Şirkətinizin Adı"></div><div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" placeholder="Şirkətinizin VÖEN-i"></div><div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" placeholder="Şirkətinizin ünvanı"></div></div></fieldset>
-            <fieldset><legend>Müştəri Məlumatları</legend><div class="form-grid"><div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName"></div><div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen"></div><div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress"></div></div></fieldset>
-            <fieldset><legend>Sənəd Məlumatları</legend><div class="form-grid"><div class="form-group"><label>Sənəd Nömrəsi</label><input type="text" id="docNumber"></div><div class="form-group"><label>Tarix</label><input type="text" id="docDate" placeholder="Tarixi seçin..."></div></div></fieldset>
-            <fieldset><legend>Məhsullar / Xidmətlər</legend><div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 10px;"><div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div><div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div><div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div><button id="addItemBtn" style="padding: 10px; font-size: 20px; border: none; border-radius: 6px; cursor: pointer; color: white; background-color: var(--primary-color); line-height: 1;">+</button></div><table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table><div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div></fieldset>
-            <fieldset><legend>Excel-dən Məhsul Importu</legend><label for="excel-input" class="custom-file-upload">Excel Faylı Seçin (.xlsx, .xls)</label><input type="file" id="excel-input" accept=".xlsx, .xls"><p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.</p></fieldset>
-            <button class="btn" id="saveProjectBtn">Sənədləri Hazırla və Yadda Saxla</button>
-        </div>
-        <div class="sidebar">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Saxlanılan Layihələr</h2>
-                <label class="theme-switch" title="Temanı dəyiş"><input type="checkbox" id="theme-toggle"><span class="slider"></span></label>
-            </div>
-            <div id="saved-projects-list"><ul></ul></div>
+            <button class="btn" id="save-settings-btn">Yadda Saxla</button>
         </div>
     </div>
-    <div class="modal-overlay" id="viewModal"><div class="modal-content"><div class="modal-header"><div class="modal-tabs" id="modalTabs"><button data-type="quote" class="active">Qiymət Razılaşdırma Protokolu</button><button data-type="act">Təhvil-Təslim Aktı</button><button data-type="invoice">Hesab-Faktura</button></div><div><button id="printModalBtn">Çap Et</button><button class="modal-close" id="closeModalBtn">&times;</button></div></div><div class="modal-body" id="modalBody"></div></div></div>
 
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBbagg2DVzviydqmYzwdG3DbO9BO6aoA8A", // ⚠️ BU HİSSƏNİ ÖZ AÇARINIZLA DƏYİŞİN!
-            authDomain: "sened-generatoru.firebaseapp.com",
-            projectId: "sened-generatoru",
-            storageBucket: "sened-generatoru.appspot.com",
-            messagingSenderId: "888906443579",
+            authDomain: "sened-generatoru.firebaseapp.com", projectId: "sened-generatoru",
+            storageBucket: "sened-generatoru.appspot.com", messagingSenderId: "888906443579",
             appId: "1:888906443579:web:3287dc68ef48a57184a51e"
         };
         firebase.initializeApp(firebaseConfig);
@@ -133,221 +122,114 @@
     document.addEventListener('DOMContentLoaded', () => {
         flatpickr("#docDate", { altInput: true, altFormat: "d.m.Y", dateFormat: "Y-m-d", defaultDate: "today" });
 
+        const generatorView = document.getElementById('generator-view');
+        const projectsListView = document.getElementById('projects-list-view');
+        const projectDetailView = document.getElementById('project-detail-view');
+        const navGenerator = document.getElementById('nav-generator');
+        const navProjects = document.getElementById('nav-projects');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsCloseBtn = document.getElementById('settings-close-btn');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
         const themeToggle = document.getElementById('theme-toggle');
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'dark') {
-            document.body.classList.add('dark-theme');
-            themeToggle.checked = true;
-        }
-        themeToggle.addEventListener('change', function() {
-            if (this.checked) {
-                document.body.classList.add('dark-theme');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.body.classList.remove('dark-theme');
-                localStorage.setItem('theme', 'light');
-            }
-        });
-        
-        const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
         const subtotalEl = document.getElementById('subtotal');
         const saveProjectBtn = document.getElementById('saveProjectBtn');
-        const savedProjectsList = document.querySelector('#saved-projects-list ul');
+        const savedProjectsList = document.getElementById('saved-projects-list');
         const excelInput = document.getElementById('excel-input');
-        const viewModal = document.getElementById('viewModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const modalTabs = document.getElementById('modalTabs');
-        const modalBody = document.getElementById('modalBody');
-        const printModalBtn = document.getElementById('printModalBtn');
-
+        
         let items = [];
-        let currentViewingProject = null;
         let currentEditingProjectId = null;
 
-        const sellerFields = [
-            document.getElementById('companyBank'), document.getElementById('companyLogo'),
-            document.getElementById('companyName'), document.getElementById('companyVoen'),
-            document.getElementById('companyAddress')
-        ];
+        function showView(viewId) {
+            generatorView.style.display = 'none';
+            projectsListView.style.display = 'none';
+            projectDetailView.style.display = 'none';
+            document.getElementById(viewId).style.display = 'block';
 
-        function saveSellerInfo() { /* ... eyni kod ... */ }
-        function loadSellerInfo() { /* ... eyni kod ... */ }
+            navGenerator.classList.remove('active');
+            navProjects.classList.remove('active');
+            if (viewId === 'generator-view') navGenerator.classList.add('active');
+            if (viewId === 'projects-list-view' || viewId === 'project-detail-view') navProjects.classList.add('active');
+        }
+        navGenerator.addEventListener('click', () => { resetForm(); showView('generator-view'); });
+        navProjects.addEventListener('click', () => showView('projects-list-view'));
+        settingsBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
+        settingsCloseBtn.addEventListener('click', () => settingsModal.style.display = 'none');
+        saveSettingsBtn.addEventListener('click', () => { saveSellerInfo(); settingsModal.style.display = 'none'; alert("Məlumatlar yadda saxlanıldı!"); });
+
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') { document.body.classList.add('dark-theme'); themeToggle.checked = true; }
+        themeToggle.addEventListener('change', function() { if (this.checked) { document.body.classList.add('dark-theme'); localStorage.setItem('theme', 'dark'); } else { document.body.classList.remove('dark-theme'); localStorage.setItem('theme', 'light'); } });
+        
+        const sellerFields = [document.getElementById('companyBank'), document.getElementById('companyLogo'), document.getElementById('companyName'), document.getElementById('companyVoen'), document.getElementById('companyAddress')];
+        function saveSellerInfo() { const sellerInfo = { bank: document.getElementById('companyBank').value, logo: document.getElementById('companyLogo').value, name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value, address: document.getElementById('companyAddress').value }; db.collection('settings').doc('seller').set(sellerInfo).catch(error => console.error("Error saving seller info: ", error)); }
+        function loadSellerInfo() { db.collection('settings').doc('seller').get().then(doc => { if (doc.exists) { const sellerInfo = doc.data(); document.getElementById('companyBank').value = sellerInfo.bank || ''; document.getElementById('companyLogo').value = sellerInfo.logo || ''; document.getElementById('companyName').value = sellerInfo.name || ''; document.getElementById('companyVoen').value = sellerInfo.voen || ''; document.getElementById('companyAddress').value = sellerInfo.address || ''; } }).catch(error => console.error("Error loading seller info: ", error)); }
         sellerFields.forEach(field => { field.addEventListener('input', saveSellerInfo); });
         loadSellerInfo(); 
+
+        excelInput.addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName]; const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); let importedCount = 0; jsonData.forEach((row) => { if (row.length >= 3 && row[0] && !isNaN(parseFloat(row[1])) && !isNaN(parseFloat(row[2]))) { items.push({ name: row[0], quantity: parseFloat(row[1]), price: parseFloat(row[2]) }); importedCount++; } }); renderTable(); alert(`${importedCount} məhsul uğurla əlavə edildi!`); } catch (error) { console.error("Excel read error:", error); alert("Faylı oxumaq mümkün olmadı."); } finally { event.target.value = ''; } }; reader.readAsArrayBuffer(file); });
         
-        excelInput.addEventListener('change', (event) => { /* ... eyni kod ... */ });
-        function listenForProjects() { /* ... eyni kod ... */ }
-        function updateDocNumber(projects) { /* ... eyni kod ... */ }
-        saveProjectBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
-        function generateDocumentHTML(type, data) { /* ... eyni kod ... */ }
-        function resetForm() { /* ... eyni kod ... */ }
-        window.viewProject = function(id) { /* ... eyni kod ... */ }
-        function showDocumentInModal(type) { /* ... eyni kod ... */ }
-        modalTabs.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') showDocumentInModal(e.target.dataset.type); });
-        closeModalBtn.addEventListener('click', () => viewModal.style.display = 'none');
-        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) viewModal.style.display = 'none'; });
-        printModalBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
-        window.loadProjectForEditing = function(id) { /* ... eyni kod ... */ }
-        window.deleteProject = function(id) { /* ... eyni kod ... */ }
-        addItemBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
-        function renderTable() { /* ... eyni kod ... */ }
-        window.deleteItem = function(index) { items.splice(index, 1); renderTable(); };
-        function calculateTotals() { /* ... eyni kod ... */ }
-        
-        // --- Tam Funksional Kodlar ---
-        function saveSellerInfo() {
-            const sellerInfo = {
-                bank: document.getElementById('companyBank').value, logo: document.getElementById('companyLogo').value,
-                name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value,
-                address: document.getElementById('companyAddress').value
-            };
-            db.collection('settings').doc('seller').set(sellerInfo).catch(error => console.error("Satıcı məlumatını saxlama xətası: ", error));
-        }
-        function loadSellerInfo() {
-            db.collection('settings').doc('seller').get().then(doc => {
-                if (doc.exists) {
-                    const sellerInfo = doc.data();
-                    document.getElementById('companyBank').value = sellerInfo.bank || ''; document.getElementById('companyLogo').value = sellerInfo.logo || '';
-                    document.getElementById('companyName').value = sellerInfo.name || ''; document.getElementById('companyVoen').value = sellerInfo.voen || '';
-                    document.getElementById('companyAddress').value = sellerInfo.address || '';
-                }
-            }).catch(error => console.error("Satıcı məlumatını yükləmə xətası: ", error));
-        }
-        excelInput.addEventListener('change', (event) => {
-            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); let importedCount = 0;
-                    jsonData.forEach((row) => {
-                        if (row.length >= 3 && row[0] && !isNaN(parseFloat(row[1])) && !isNaN(parseFloat(row[2]))) {
-                            items.push({ name: row[0], quantity: parseFloat(row[1]), price: parseFloat(row[2]) });
-                            importedCount++;
-                        }
-                    });
-                    renderTable(); alert(`${importedCount} məhsul uğurla əlavə edildi!`);
-                } catch (error) { console.error("Excel faylını oxuma xətası:", error); alert("Faylı oxumaq mümkün olmadı. Zəhmət olmasa faylın formatını yoxlayın.");
-                } finally { event.target.value = ''; }
-            };
-            reader.readAsArrayBuffer(file);
-        });
         function listenForProjects() {
             db.collection('projects').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
                 const projects = []; snapshot.forEach(doc => { projects.push({ id: doc.id, ...doc.data() }); });
-                savedProjectsList.innerHTML = '';
+                savedProjectsList.innerHTML = '<ul></ul>';
                 projects.forEach(p => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<span><strong>${p.clientInfo.name}</strong><br><small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small></span><span class="project-actions"><button onclick="viewProject('${p.id}')">Bax</button><button onclick="loadProjectForEditing('${p.id}')">Yüklə</button><button onclick="deleteProject('${p.id}')">Sil</button></span>`;
-                    savedProjectsList.appendChild(li);
+                    li.innerHTML = `<span><strong>${p.clientInfo.name}</strong><br><small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small></span>`;
+                    li.addEventListener('click', () => displayProject(p.id));
+                    savedProjectsList.querySelector('ul').appendChild(li);
                 });
                 updateDocNumber(projects);
-            }, error => { console.error("Layihələri dinləmə xətası: ", error); });
+            }, error => { console.error("Error listening for projects: ", error); });
         }
-        function updateDocNumber(projects) {
-            if (currentEditingProjectId) return;
-            let lastNum = 0;
-            if (projects && projects.length > 0) { lastNum = Math.max(0, ...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0))); }
-            document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`;
-        }
-        saveProjectBtn.addEventListener('click', () => {
-            if (items.length === 0) { alert('Layihə yaratmaq üçün məhsul/xidmət əlavə edin.'); return; }
-            const rawData = {
-                companyInfo: { logo: document.getElementById('companyLogo').value, name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value, address: document.getElementById('companyAddress').value, bank: document.getElementById('companyBank').value },
-                clientInfo: { name: document.getElementById('clientName').value, voen: document.getElementById('clientVoen').value, address: document.getElementById('clientAddress').value },
-                docInfo: { number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value },
-                items: items
-            };
-            const projectId = currentEditingProjectId || `${Date.now()}`;
-            const newProject = { timestamp: parseInt(projectId), clientInfo: rawData.clientInfo, docInfo: rawData.docInfo, rawData: rawData };
-            db.collection('projects').doc(projectId).set(newProject).then(() => { console.log("Layihə uğurla saxlanıldı!"); resetForm(); }).catch(error => { console.error("Layihəni saxlama xətası: ", error); alert("Xəta baş verdi, layihə saxlanılmadı."); });
-        });
-        function generateDocumentHTML(type, data) {
-            const { companyInfo, clientInfo, docInfo, items } = data;
-            const dateObj = new Date(docInfo.rawDate); const adjustedDate = new Date(dateObj.valueOf() + dateObj.getTimezoneOffset() * 60 * 1000);
-            const day = String(adjustedDate.getDate()).padStart(2, '0'); const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); const year = adjustedDate.getFullYear();
-            const numericDate = `${day}.${month}.${year}`; const docDate = `${numericDate}-ci il`;
-            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const vat = subtotal * 0.18; const total = subtotal + vat;
-            let docTitle = '';
-            switch(type){
-                case 'quote': docTitle = 'Qiymət Razılaşdırma Protokolu'; break;
-                case 'act': docTitle = 'Təhvil-Təslim Aktı'; break;
-                case 'invoice': docTitle = 'Hesab-Faktura'; break;
-            }
-            let bankDetailsHTML = '';
-            if (type === 'invoice' && companyInfo.bank) { bankDetailsHTML = `<div class="doc-bank-details"><strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank.replace(/\n/g, '<br>')}</small></div>`; }
-            const itemsTableHTML = `<table class="doc-table"><thead><tr><th>№</th><th>Adı</th><th>Miqdar</th>
-                ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}</tr></thead>
-                <tbody>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td>
-                ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}</tr>`).join('')}
-                </tbody></table>`;
-            const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table><tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr><tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr><tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr></table></div>` : '';
-            const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;"><div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div><div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>` : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`;
-            return `<div class="printable-area"><div class="doc-header"><div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div><div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div></div>${bankDetailsHTML}<div class="doc-parties"><div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div><div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div></div>${itemsTableHTML}${totalsHTML}${footerHTML}</div>`;
-        }
-        function resetForm() {
-            document.getElementById('clientName').value = ''; document.getElementById('clientVoen').value = ''; document.getElementById('clientAddress').value = ''; document.getElementById('projectId').value = '';
-            const fp = document.querySelector("#docDate")._flatpickr; fp.setDate("today");
-            items = []; currentEditingProjectId = null;
-            saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
-            renderTable(); listenForProjects();
-        }
-        window.viewProject = function(id) {
-            db.collection('projects').doc(id).get().then(doc => { if (!doc.exists) return; currentViewingProject = { id: doc.id, ...doc.data() }; viewModal.style.display = 'flex'; showDocumentInModal('quote'); });
-        }
-        function showDocumentInModal(type) {
-            const html = generateDocumentHTML(type, currentViewingProject.rawData);
-            modalBody.innerHTML = html;
-            modalTabs.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
-        }
-        printModalBtn.addEventListener('click', () => {
-             const printContent = modalBody.querySelector('.printable-area').outerHTML;
-             const styles = document.head.querySelectorAll('style, link[rel="stylesheet"]');
-             const printWindow = window.open('', '_blank');
-             if (printWindow) {
-                printWindow.document.write('<!DOCTYPE html><html><head><title>Print</title>');
-                styles.forEach(style => { printWindow.document.write(style.outerHTML); });
-                printWindow.document.write('</head><body>');
-                printWindow.document.write(printContent);
-                printWindow.document.write('</body></html>');
-                printWindow.document.close();
-                setTimeout(() => { printWindow.focus(); printWindow.print(); }, 500);
-             } else { alert("Popup pəncərələr bloklanıb. Zəhmət olmasa, bu sayt üçün popup-lara icazə verin."); }
-        });
-        window.loadProjectForEditing = function(id) {
-            db.collection('projects').doc(id).get().then(doc => {
-                if(!doc.exists) return; const project = doc.data(); const data = project.rawData;
-                document.getElementById('clientName').value = data.clientInfo.name; document.getElementById('clientVoen').value = data.clientInfo.voen; document.getElementById('clientAddress').value = data.clientInfo.address;
-                document.getElementById('docNumber').value = data.docInfo.number;
-                const fp = document.querySelector("#docDate")._flatpickr; fp.setDate(data.docInfo.rawDate);
-                items = data.items; renderTable();
-                currentEditingProjectId = id; saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
+
+        function updateDocNumber(projects) { if (currentEditingProjectId) return; let lastNum = 0; if (projects && projects.length > 0) { lastNum = Math.max(0, ...projects.map(p => parseInt((p.docInfo.number || "SN-0").split('-')[1] || 0))); } document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`; }
+        
+        saveProjectBtn.addEventListener('click', () => { if (items.length === 0) { alert('Məhsul əlavə edin.'); return; } const rawData = { companyInfo: { logo: document.getElementById('companyLogo').value, name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value, address: document.getElementById('companyAddress').value, bank: document.getElementById('companyBank').value }, clientInfo: { name: document.getElementById('clientName').value, voen: document.getElementById('clientVoen').value, address: document.getElementById('clientAddress').value }, docInfo: { number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value }, items: items }; const projectId = currentEditingProjectId || `${Date.now()}`; const newProject = { timestamp: parseInt(projectId), clientInfo: rawData.clientInfo, docInfo: rawData.docInfo, rawData: rawData }; db.collection('projects').doc(projectId).set(newProject).then(() => { console.log("Project saved!"); showView('projects-list-view'); }).catch(error => { console.error("Error saving project: ", error); alert("Xəta baş verdi."); }); });
+        
+        function generateDocumentHTML(type, data) { const { companyInfo, clientInfo, docInfo, items } = data; const dateObj = new Date(docInfo.rawDate); const adjustedDate = new Date(dateObj.valueOf() + dateObj.getTimezoneOffset() * 60 * 1000); const day = String(adjustedDate.getDate()).padStart(2, '0'); const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); const year = adjustedDate.getFullYear(); const numericDate = `${day}.${month}.${year}`; const docDate = `${numericDate}-ci il`; const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0); const vat = subtotal * 0.18; const total = subtotal + vat; let docTitle = ''; switch(type){ case 'quote': docTitle = 'Qiymət Razılaşdırma Protokolu'; break; case 'act': docTitle = 'Təhvil-Təslim Aktı'; break; case 'invoice': docTitle = 'Hesab-Faktura'; break; } let bankDetailsHTML = ''; if (type === 'invoice' && companyInfo.bank) { bankDetailsHTML = `<div class="doc-bank-details"><strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank.replace(/\n/g, '<br>')}</small></div>`; } const itemsTableHTML = `<table class="doc-table"><thead><tr><th>№</th><th>Adı</th><th>Miqdar</th> ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}</tr></thead><tbody>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td> ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}</tr>`).join('')}</tbody></table>`; const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table><tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr><tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr><tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr></table></div>` : ''; const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;"><div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div><div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>` : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`; return `<div class="printable-area"><div class="doc-header"><div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div><div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div></div>${bankDetailsHTML}<div class="doc-parties"><div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div><div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div></div>${itemsTableHTML}${totalsHTML}${footerHTML}</div>`; }
+        
+        window.displayProject = (projectId) => {
+            db.collection('projects').doc(projectId).get().then(doc => {
+                if (!doc.exists) return;
+                const projectData = { id: doc.id, ...doc.data() };
+                projectDetailView.innerHTML = `<div class="project-view-header">
+                    <div><button id="back-to-list-btn" class="btn">&larr; Siyahıya Geri Dön</button></div>
+                    <div class="project-view-tabs">
+                        <button data-type="quote" class="active">Qiymət Razılaşdırma Protokolu</button>
+                        <button data-type="act">Təhvil-Təslim Aktı</button>
+                        <button data-type="invoice">Hesab-Faktura</button>
+                    </div><div>
+                        <button id="project-load-btn" style="background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-right: 10px;">Düzəliş et</button>
+                        <button id="project-delete-btn" style="background: var(--danger-color); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; border:none; margin-right:10px;">Sil</button>
+                        <button id="project-print-btn" style="background: var(--primary-color); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; border:none;">Çap Et</button>
+                    </div></div>
+                    <div class="project-view-body"></div>`;
+                
+                const displayDoc = (type) => { projectDetailView.querySelector('.project-view-body').innerHTML = generateDocumentHTML(type, projectData.rawData); projectDetailView.querySelectorAll('.project-view-tabs button').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type)); };
+                displayDoc('quote');
+                showView('project-detail-view');
+
+                projectDetailView.querySelector('#back-to-list-btn').addEventListener('click', () => showView('projects-list-view'));
+                projectDetailView.querySelector('#project-load-btn').addEventListener('click', () => loadProjectForEditing(projectId));
+                projectDetailView.querySelector('#project-delete-btn').addEventListener('click', () => deleteProject(projectId));
+                projectDetailView.querySelector('#project-print-btn').addEventListener('click', () => { const printContent = projectDetailView.querySelector('.printable-area').outerHTML; const styles = document.head.querySelectorAll('style, link[rel="stylesheet"]'); const printWindow = window.open('', '_blank'); if (printWindow) { printWindow.document.write('<!DOCTYPE html><html><head><title>Print</title>'); styles.forEach(style => { printWindow.document.write(style.outerHTML); }); printWindow.document.write('</head><body>'); printWindow.document.write(printContent); printWindow.document.write('</body></html>'); printWindow.document.close(); setTimeout(() => { printWindow.focus(); printWindow.print(); }, 500); } else { alert("Popup pəncərələr bloklanıb."); } });
+                projectDetailView.querySelector('.project-view-tabs').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') displayDoc(e.target.dataset.type); });
             });
-        }
-        window.deleteProject = function(id) { if (!confirm("Bu layihəni və ona aid bütün sənədləri silməyə əminsiniz?")) return; db.collection('projects').doc(id).delete().catch(error => console.error("Layihəni silmə xətası: ", error)); }
-        addItemBtn.addEventListener('click', () => {
-            const name = document.getElementById('itemName').value; const quantity = parseFloat(document.getElementById('itemQuantity').value); const price = parseFloat(document.getElementById('itemPrice').value);
-            if (name && quantity > 0 && price >= 0) { items.push({ name, quantity, price }); document.getElementById('itemName').value = ''; document.getElementById('itemQuantity').value = '1'; document.getElementById('itemPrice').value = '0'; renderTable(); }
-        });
-        function renderTable() {
-            itemsTbody.innerHTML = '';
-            items.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)}</td><td>${(item.quantity * item.price).toFixed(2)}</td><td><button class="delete-btn" onclick="deleteItem(${index})">✖</button></td>`;
-                itemsTbody.appendChild(row);
-            });
-            calculateTotals();
-        }
+        };
+
+        function resetForm() { document.getElementById('clientName').value = ''; document.getElementById('clientVoen').value = ''; document.getElementById('clientAddress').value = ''; document.getElementById('projectId').value = ''; const fp = document.querySelector("#docDate")._flatpickr; fp.setDate("today"); items = []; currentEditingProjectId = null; saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla"; renderTable(); updateDocNumber([]); }
+        window.loadProjectForEditing = function(id) { db.collection('projects').doc(id).get().then(doc => { if(!doc.exists) return; showView('generator-view'); const project = doc.data(); const data = project.rawData; document.getElementById('clientName').value = data.clientInfo.name; document.getElementById('clientVoen').value = data.clientInfo.voen; document.getElementById('clientAddress').value = data.clientInfo.address; document.getElementById('docNumber').value = data.docInfo.number; const fp = document.querySelector("#docDate")._flatpickr; fp.setDate(data.docInfo.rawDate); items = data.items; renderTable(); currentEditingProjectId = id; saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla"; }); }
+        window.deleteProject = function(id) { if (!confirm("Bu layihəni silməyə əminsiniz?")) return; db.collection('projects').doc(id).delete().then(() => showView('projects-list-view')).catch(error => console.error("Error deleting project: ", error)); }
+        addItemBtn.addEventListener('click', () => { const name = document.getElementById('itemName').value; const quantity = parseFloat(document.getElementById('itemQuantity').value); const price = parseFloat(document.getElementById('itemPrice').value); if (name && quantity > 0 && price >= 0) { items.push({ name, quantity, price }); document.getElementById('itemName').value = ''; document.getElementById('itemQuantity').value = '1'; document.getElementById('itemPrice').value = '0'; renderTable(); } });
+        function renderTable() { itemsTbody.innerHTML = ''; items.forEach((item, index) => { const row = document.createElement('tr'); row.innerHTML = `<td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)}</td><td>${(item.quantity * item.price).toFixed(2)}</td><td><button class="delete-btn" onclick="deleteItem(${index})">✖</button></td>`; itemsTbody.appendChild(row); }); calculateTotals(); }
         window.deleteItem = function(index) { items.splice(index, 1); renderTable(); };
-        function calculateTotals() {
-            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`;
-        }
+        function calculateTotals() { const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0); subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`; }
         
         listenForProjects();
+        showView('generator-view');
     });
     </script>
 </body>
