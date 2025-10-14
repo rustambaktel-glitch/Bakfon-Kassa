@@ -122,8 +122,20 @@
         .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; }
         .doc-header img { max-width: 150px; max-height: 70px; }
         .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; }
-        .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; }
-        .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; }
+        .doc-bank-details {
+            margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px;
+            font-size: 12px; line-height: 1.6;
+            /* DÜZƏLİŞ: Mətni qırılmağa məcbur edir */
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+        .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } 
+        .doc-parties div { 
+            width: 48%; line-height: 1.5; font-size: 12px;
+            /* DÜZƏLİŞ: Mətni qırılmağa məcbur edir */
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
         .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
         .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; } .doc-table th { background-color: #f8f9fa; }
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
@@ -146,7 +158,7 @@
                 <legend>Bank Rekvizitləri</legend>
                 <div class="form-group full-width">
                     <label>Bank və hesab məlumatlarınız (Hesab-Faktura üçün)</label>
-                    <textarea id="companyBank" rows="4">Bank: Kapital Bank ASC&#10;H/H: AZ12345...&#10;M/H: AZ12345...&#10;Kod: 200100</textarea>
+                    <textarea id="companyBank" rows="4">Bank: Kapital Bank ASC&#10;H/H: AZ12345678901234567890&#10;M/H: AZ12345678901234567890&#10;Kod: 200100</textarea>
                 </div>
             </fieldset>
 
@@ -334,16 +346,12 @@
             resetForm();
         });
         
-        // --- DƏYİŞİKLİK EDİLMİŞ HİSSƏ ---
         function generateDocumentHTML(type, data) {
             const { companyInfo, clientInfo, docInfo, items } = data;
-
-            // Düzəliş: Tarix formatı üçün universal üsul
             const dateObj = new Date(docInfo.rawDate);
-            // Saat qurşağı fərqi ilə yaranan xətaların qarşısını almaq üçün:
             const adjustedDate = new Date(dateObj.valueOf() + dateObj.getTimezoneOffset() * 60 * 1000);
             const day = String(adjustedDate.getDate()).padStart(2, '0');
-            const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Aylar 0-dan başladığı üçün +1
+            const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); 
             const year = adjustedDate.getFullYear();
             const numericDate = `${day}.${month}.${year}`;
             const docDate = `${numericDate}-ci il`;
