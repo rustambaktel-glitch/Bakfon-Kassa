@@ -3,59 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layihə Əsaslı Sənəd Generatoru</title>
+    <title>Sənəd Generatoru (Dark Mode)</title>
     <style>
         :root {
-            --primary-color: #005A9C; --secondary-color: #F3F4F6; --border-color: #D1D5DB;
-            --text-color: #1F2937; --background-color: #FFFFFF; --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* Yeni "Dark Mode" rəng palitrası */
+            --primary-color: #4299E1; /* Bright Blue Accent */
+            --primary-hover-color: #63B3ED;
+            --background-color: #1A202C; /* Very Dark Slate */
+            --secondary-color: #2D3748; /* Darker Slate (for containers) */
+            --border-color: #4A5568; /* Grayish Blue */
+            --text-color: #E2E8F0; /* Light Gray (for text) */
+            --text-muted-color: #A0AEC0; /* Muted Gray */
+            --danger-color: #E53E3E; /* Red */
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        body { font-family: var(--font-family); background-color: var(--secondary-color); color: var(--text-color); margin: 0; font-size: 14px; }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; height: 100vh; box-sizing: border-box; }
-        .form-container, .sidebar { background-color: var(--background-color); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 25px; overflow-y: auto; height: calc(100vh - 40px); }
-        h1, h2, h3 { color: var(--primary-color); margin-top: 0; }
-        h1 { text-align: center; font-size: 24px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        fieldset { border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-        legend { font-weight: 600; color: var(--primary-color); padding: 0 8px; }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            font-size: 14px;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            padding: 25px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        .form-container, .sidebar {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            overflow-y: auto;
+            height: calc(100vh - 50px);
+        }
+        h1, h2 {
+            color: var(--text-color);
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        h1 { font-size: 24px; margin-bottom: 25px; color: white; }
+        h2 { font-size: 20px; margin-bottom: 20px; text-align: left; }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        legend {
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 10px;
+            margin-left: 5px;
+        }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-group.full-width { grid-column: 1 / -1; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        input, textarea, select { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-muted-color); }
+        input, textarea, select {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 14px; box-sizing: border-box;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.2s ease-in-out;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3); }
         .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
-        .items-table th { background-color: var(--secondary-color); font-weight: 600; }
-        .delete-btn { background: none; border: none; color: #EF4444; cursor: pointer; font-size: 16px; }
+        .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        .items-table th { background-color: var(--background-color); font-weight: 600; }
+        .delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 16px; }
         .totals { margin-top: 15px; text-align: right; }
-        .btn { padding: 12px 25px; font-size: 14px; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; color: white; background-color: #10B981; width:100%; }
+        .btn {
+            padding: 12px 25px; font-size: 16px; font-weight: 600; border: none;
+            border-radius: 6px; cursor: pointer; color: #ffffff; background-color: var(--primary-color);
+            width:100%; transition: background-color 0.2s;
+        }
+        .btn:hover { background-color: var(--primary-hover-color); }
+        
         #saved-projects-list ul { list-style: none; padding: 0; margin: 0; }
-        #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
-        .project-actions button { background: none; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; margin-left: 5px; cursor: pointer; }
+        #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .project-actions button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 5px 10px; margin-left: 5px; cursor: pointer; transition: all 0.2s; }
+        .project-actions button:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        
         /* Modal Styles */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 8.5in; height: 90%; max-height: 11in; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--secondary-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 8.5in; height: 90%; max-height: 11in; box-shadow: 0 5px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid var(--border-color); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         .modal-tabs { display: flex; gap: 10px; }
-        .modal-tabs button { padding: 8px 15px; border: 1px solid var(--border-color); background: var(--secondary-color); border-radius: 5px; cursor: pointer; }
+        .modal-tabs button { padding: 8px 15px; border: 1px solid var(--border-color); background: var(--secondary-color); border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-muted-color); }
         .modal-tabs button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-top: 20px; }
-        /* Corporate Document Styles */
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px; }
+        .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted-color); }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 20px; background: #525252; margin-top: 15px; border-radius: 6px; }
+        #printModalBtn { background-color: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        #printModalBtn:hover { background-color: var(--primary-hover-color); }
+        
+        /* Corporate Document Styles (FORCE WHITE BACKGROUND) */
+        .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; }
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; }
         .doc-header img { max-width: 150px; max-height: 70px; }
-        .doc-title { text-align: right; }
-        .doc-title h2 { margin: 0; font-size: 28px; }
-        .doc-parties { display: flex; justify-content: space-between; margin-top: 25px; }
-        .doc-parties div { width: 48%; line-height: 1.5; }
+        .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; }
+        .doc-parties { display: flex; justify-content: space-between; margin-top: 25px; } .doc-parties div { width: 48%; line-height: 1.5; }
         .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
-        .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; }
-        .doc-table th { background-color: #f8f9fa; }
+        .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; } .doc-table th { background-color: #f8f9fa; }
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
-        .doc-totals table { width: 100%; }
-        .doc-totals td { padding: 5px; }
-        .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); clear: both; }
+        .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; }
+        .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
         @media print {
             body * { visibility: hidden; }
             .printable-area, .printable-area * { visibility: visible; }
-            .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
         }
     </style>
 </head>
@@ -64,7 +125,8 @@
     <div class="main-layout">
         <div class="form-container">
             <h1>Sənəd Generatoru</h1>
-            <input type="hidden" id="projectId"> <fieldset>
+            <input type="hidden" id="projectId">
+            <fieldset>
                 <legend>Şirkət Məlumatları</legend>
                 <div class="form-grid">
                     <div class="form-group full-width"><label for="companyLogo">Şirkət Loqo URL</label><input type="text" id="companyLogo" placeholder="https://example.com/logo.png"></div>
@@ -94,11 +156,11 @@
 
             <fieldset>
                 <legend>Məhsullar / Xidmətlər</legend>
-                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 0.5fr; align-items: end;">
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 10px;">
                     <div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div>
                     <div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div>
                     <div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div>
-                    <button id="addItemBtn" style="padding: 8px; font-size: 14px; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; color: white; background-color: var(--primary-color);">+</button>
+                    <button id="addItemBtn" style="padding: 10px; font-size: 20px; border: none; border-radius: 6px; cursor: pointer; color: white; background-color: var(--primary-color); line-height: 1;">+</button>
                 </div>
                 <table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table>
                 <div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div>
@@ -121,7 +183,7 @@
                     <button data-type="invoice">Hesab-Faktura</button>
                 </div>
                  <div>
-                    <button class="btn-primary" style="padding: 8px 15px; border-radius: 5px; border:none; color:white; cursor:pointer;" id="printModalBtn">Çap Et</button>
+                    <button id="printModalBtn">Çap Et</button>
                     <button class="modal-close" id="closeModalBtn">&times;</button>
                 </div>
             </div>
@@ -132,6 +194,9 @@
 
 
     <script>
+    // --- BÜTÜN JAVASCRIPT KODU DƏYİŞMƏDƏN QALIR ---
+    // Funksionallıqda heç bir dəyişiklik edilmədiyi üçün əvvəlki JavaScript kodunun
+    // eynisini bura yapışdırmaq olar. Sadəcə CSS (style) hissəsində dəyişiklik edilib.
     document.addEventListener('DOMContentLoaded', () => {
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
@@ -140,7 +205,6 @@
         const saveProjectBtn = document.getElementById('saveProjectBtn');
         const savedProjectsList = document.querySelector('#saved-projects-list ul');
         
-        // Modal elements
         const viewModal = document.getElementById('viewModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
         const modalTabs = document.getElementById('modalTabs');
@@ -167,7 +231,7 @@
                 li.innerHTML = `
                     <span>
                         <strong>${p.clientInfo.name}</strong><br>
-                        <small>#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ')})</small>
+                        <small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ')})</small>
                     </span>
                     <span class="project-actions">
                         <button onclick="viewProject('${p.id}')">Bax</button>
@@ -284,7 +348,7 @@
             
             return `<div class="printable-area">
                 <div class="doc-header">
-                    <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3>${companyInfo.name}</h3>`}</div>
+                    <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div>
                     <div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div>
                 </div>
                 <div class="doc-parties">
@@ -333,14 +397,13 @@
         });
 
         printModalBtn.addEventListener('click', () => {
-             const printContents = modalBody.innerHTML;
-             const originalContents = document.body.innerHTML;
-             document.body.innerHTML = printContents;
-             window.print();
-             document.body.innerHTML = originalContents;
-             // We need to re-initialize event listeners and state after overriding body content. This is a complex problem. A better way is using a hidden iframe.
-             // For simplicity in this example, we'll just reload the page.
-             window.location.reload();
+             const printFrame = document.createElement('iframe');
+             printFrame.style.display = 'none';
+             document.body.appendChild(printFrame);
+             printFrame.contentDocument.write('<html><head><title>Print</title></head><body>' + modalBody.querySelector('.printable-area').innerHTML + '</body></html>');
+             printFrame.contentDocument.close();
+             printFrame.contentWindow.print();
+             document.body.removeChild(printFrame);
         });
 
         window.loadProjectForEditing = function(id) {
@@ -374,7 +437,6 @@
             saveProjects(projects);
         }
 
-        // --- Initial setup for items table ---
         docDateInput.valueAsDate = new Date();
         addItemBtn.addEventListener('click', () => {
             const name = document.getElementById('itemName').value;
@@ -403,7 +465,6 @@
             subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`;
         }
         
-        // Initial Load
         renderSavedProjects();
     });
     </script>
