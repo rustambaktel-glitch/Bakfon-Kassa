@@ -3,204 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Korporativ Sənəd Generatoru</title>
+    <title>Layihə Əsaslı Sənəd Generatoru</title>
     <style>
         :root {
-            --primary-color: #005A9C;
-            --secondary-color: #F3F4F6;
-            --border-color: #D1D5DB;
-            --text-color: #1F2937;
-            --background-color: #FFFFFF;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --primary-color: #005A9C; --secondary-color: #F3F4F6; --border-color: #D1D5DB;
+            --text-color: #1F2937; --background-color: #FFFFFF; --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-
-        body {
-            font-family: var(--font-family);
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .form-container, .sidebar {
-            background-color: var(--background-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            padding: 25px;
-            overflow-y: auto;
-            height: calc(100vh - 40px);
-        }
-        
-        h1, h2, h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 25px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        fieldset {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        legend {
-            font-weight: 600;
-            color: var(--primary-color);
-            padding: 0 8px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 14px;
-            box-sizing: border-box;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(0, 90, 156, 0.2);
-        }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .items-table th, .items-table td {
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            text-align: left;
-        }
-
-        .items-table th {
-            background-color: var(--secondary-color);
-            font-weight: 600;
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #EF4444;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .totals {
-            margin-top: 15px;
-            text-align: right;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            flex-grow: 1;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            color: white;
-            transition: background-color 0.2s;
-        }
-        .btn-primary { background-color: #3B82F6; }
-        .btn-primary:hover { background-color: #2563EB; }
-        .btn-add { background-color: #10B981; }
-        .btn-add:hover { background-color: #059669; }
-
-        /* Sidebar Styles */
-        #saved-documents-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #saved-documents-list li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        #saved-documents-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .doc-actions button {
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 4px 8px;
-            margin-left: 5px;
-            cursor: pointer;
-        }
-
-        /* Output Styles */
-        #output {
-            margin-top: 20px;
-            border: 1px solid var(--border-color);
-            height: auto;
-            min-height: 400px;
-            padding: 30px;
-        }
-        
-        #output.placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #9CA3AF;
-        }
-
+        body { font-family: var(--font-family); background-color: var(--secondary-color); color: var(--text-color); margin: 0; font-size: 14px; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; height: 100vh; box-sizing: border-box; }
+        .form-container, .sidebar { background-color: var(--background-color); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 25px; overflow-y: auto; height: calc(100vh - 40px); }
+        h1, h2, h3 { color: var(--primary-color); margin-top: 0; }
+        h1 { text-align: center; font-size: 24px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        fieldset { border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+        legend { font-weight: 600; color: var(--primary-color); padding: 0 8px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input, textarea, select { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        .items-table th { background-color: var(--secondary-color); font-weight: 600; }
+        .delete-btn { background: none; border: none; color: #EF4444; cursor: pointer; font-size: 16px; }
+        .totals { margin-top: 15px; text-align: right; }
+        .btn { padding: 12px 25px; font-size: 14px; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; color: white; background-color: #10B981; width:100%; }
+        #saved-projects-list ul { list-style: none; padding: 0; margin: 0; }
+        #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .project-actions button { background: none; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; margin-left: 5px; cursor: pointer; }
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 8.5in; height: 90%; max-height: 11in; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .modal-tabs { display: flex; gap: 10px; }
+        .modal-tabs button { padding: 8px 15px; border: 1px solid var(--border-color); background: var(--secondary-color); border-radius: 5px; cursor: pointer; }
+        .modal-tabs button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding-top: 20px; }
+        /* Corporate Document Styles */
         .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px; }
         .doc-header img { max-width: 150px; max-height: 70px; }
         .doc-title { text-align: right; }
         .doc-title h2 { margin: 0; font-size: 28px; }
         .doc-parties { display: flex; justify-content: space-between; margin-top: 25px; }
-        .doc-parties div { width: 48%; }
+        .doc-parties div { width: 48%; line-height: 1.5; }
         .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
         .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; }
         .doc-table th { background-color: #f8f9fa; }
@@ -208,13 +52,10 @@
         .doc-totals table { width: 100%; }
         .doc-totals td { padding: 5px; }
         .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); clear: both; }
-
         @media print {
-            body { background: none; }
-            .main-layout { display: block; padding: 0; }
-            .form-container, .sidebar h2, #saved-documents-list, #printBtnContainer { display: none; }
-            .sidebar { box-shadow: none; padding: 0; }
-            #output { border: none; }
+            body * { visibility: hidden; }
+            .printable-area, .printable-area * { visibility: visible; }
+            .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
 </head>
@@ -223,30 +64,14 @@
     <div class="main-layout">
         <div class="form-container">
             <h1>Sənəd Generatoru</h1>
-
-            <fieldset>
+            <input type="hidden" id="projectId"> <fieldset>
                 <legend>Şirkət Məlumatları</legend>
                 <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label for="companyLogo">Şirkət Loqo URL (boş saxlayın əgər yoxdursa)</label>
-                        <input type="text" id="companyLogo" placeholder="https://example.com/logo.png">
-                    </div>
-                    <div class="form-group">
-                        <label>Şirkətin adı</label>
-                        <input type="text" id="companyName" value="TechSolutions MMC">
-                    </div>
-                    <div class="form-group">
-                        <label>VÖEN</label>
-                        <input type="text" id="companyVoen" value="1234567890">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Ünvan</label>
-                        <input type="text" id="companyAddress" value="Bakı şəh., Nizami küç. 1">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Bank rekvizitləri</label>
-                        <textarea id="companyBank" rows="3">Bank: Kapital Bank ASC\nH/H: AZ12345...\nM/H: AZ12345...\nKod: 200100</textarea>
-                    </div>
+                    <div class="form-group full-width"><label for="companyLogo">Şirkət Loqo URL</label><input type="text" id="companyLogo" placeholder="https://example.com/logo.png"></div>
+                    <div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" value="TechSolutions MMC"></div>
+                    <div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" value="1234567890"></div>
+                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" value="Bakı şəh., Nizami küç. 1"></div>
+                    <div class="form-group full-width"><label>Bank rekvizitləri</label><textarea id="companyBank" rows="3">Bank: Kapital Bank ASC&#10;H/H: AZ12345...&#10;M/H: AZ12345...&#10;Kod: 200100</textarea></div>
                 </div>
             </fieldset>
 
@@ -273,22 +98,38 @@
                     <div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div>
                     <div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div>
                     <div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div>
-                    <button id="addItemBtn" class="btn btn-add">Əlavə et</button>
+                    <button id="addItemBtn" style="padding: 8px; font-size: 14px; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; color: white; background-color: var(--primary-color);">+</button>
                 </div>
                 <table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table>
                 <div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div>
             </fieldset>
+            <button class="btn" id="saveProjectBtn">Sənədləri Hazırla və Yadda Saxla</button>
         </div>
 
         <div class="sidebar">
-            <h2>Saxlanılan Sənədlər</h2>
-            <div id="saved-documents-list"><ul></ul></div>
-            
-            <div id="output" class="placeholder">
-                <p>Sənədi hazırladıqdan sonra önbaxış burada görünəcək.</p>
-            </div>
+            <h2>Saxlanılan Layihələr</h2>
+            <div id="saved-projects-list"><ul></ul></div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-tabs" id="modalTabs">
+                    <button data-type="quote" class="active">Qiymət Təklifi</button>
+                    <button data-type="act">Təhvil-Təslim Aktı</button>
+                    <button data-type="invoice">Hesab-Faktura</button>
+                </div>
+                 <div>
+                    <button class="btn-primary" style="padding: 8px 15px; border-radius: 5px; border:none; color:white; cursor:pointer;" id="printModalBtn">Çap Et</button>
+                    <button class="modal-close" id="closeModalBtn">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
+
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -296,251 +137,274 @@
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
         const subtotalEl = document.getElementById('subtotal');
-        const outputDiv = document.getElementById('output');
-        const savedDocsList = document.querySelector('#saved-documents-list ul');
+        const saveProjectBtn = document.getElementById('saveProjectBtn');
+        const savedProjectsList = document.querySelector('#saved-projects-list ul');
+        
+        // Modal elements
+        const viewModal = document.getElementById('viewModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalTabs = document.getElementById('modalTabs');
+        const modalBody = document.getElementById('modalBody');
+        const printModalBtn = document.getElementById('printModalBtn');
 
         let items = [];
-        let docIdCounter = 1;
+        let currentViewingProject = null;
+        let currentEditingProjectId = null;
 
-        // Load data from localStorage on startup
-        function loadSavedDocuments() {
-            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
-            savedDocsList.innerHTML = '';
-            savedDocs.forEach(doc => {
+        function getProjects() {
+            return JSON.parse(localStorage.getItem('projects') || '[]');
+        }
+        function saveProjects(projects) {
+            localStorage.setItem('projects', JSON.stringify(projects));
+            renderSavedProjects();
+        }
+
+        function renderSavedProjects() {
+            const projects = getProjects();
+            savedProjectsList.innerHTML = '';
+            projects.sort((a, b) => b.timestamp - a.timestamp).forEach(p => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>
-                        <strong>#${doc.docInfo.number}</strong> - ${doc.clientInfo.name} 
-                        <small>(${new Date(doc.timestamp).toLocaleDateString('az-AZ')})</small>
+                        <strong>${p.clientInfo.name}</strong><br>
+                        <small>#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ')})</small>
                     </span>
-                    <span class="doc-actions">
-                        <button onclick="loadDocument('${doc.id}')">Yüklə</button>
-                        <button onclick="deleteDocument('${doc.id}')">Sil</button>
+                    <span class="project-actions">
+                        <button onclick="viewProject('${p.id}')">Bax</button>
+                        <button onclick="loadProjectForEditing('${p.id}')">Yüklə</button>
+                        <button onclick="deleteProject('${p.id}')">Sil</button>
                     </span>`;
-                savedDocsList.appendChild(li);
+                savedProjectsList.appendChild(li);
             });
             updateDocNumber();
         }
 
         function updateDocNumber() {
-            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
-            if (savedDocs.length > 0) {
-                const lastDocNum = savedDocs.map(d => parseInt(d.docInfo.number.split('-')[1] || 0)).sort((a,b) => b-a)[0];
-                docIdCounter = (lastDocNum || 0) + 1;
-            } else {
-                docIdCounter = 1;
+            if (currentEditingProjectId) return;
+            const projects = getProjects();
+            let lastNum = 0;
+            if (projects.length > 0) {
+                 lastNum = Math.max(...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0)));
             }
-            document.getElementById('docNumber').value = `SN-${String(docIdCounter).padStart(3, '0')}`;
+            document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`;
         }
         
-        window.saveDocument = function(generatedDoc) {
-            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
-            const docIndex = savedDocs.findIndex(d => d.id === generatedDoc.id);
-            if (docIndex > -1) {
-                savedDocs[docIndex] = generatedDoc; // Update existing
-            } else {
-                savedDocs.push(generatedDoc); // Add new
-            }
-            localStorage.setItem('documents', JSON.stringify(savedDocs));
-            loadSavedDocuments();
-        };
-        
-        window.loadDocument = function(id) {
-            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
-            const doc = savedDocs.find(d => d.id === id);
-            if (!doc) return;
-
-            document.getElementById('companyLogo').value = doc.companyInfo.logo || '';
-            document.getElementById('companyName').value = doc.companyInfo.name;
-            document.getElementById('companyVoen').value = doc.companyInfo.voen;
-            document.getElementById('companyAddress').value = doc.companyInfo.address;
-            document.getElementById('companyBank').value = doc.companyInfo.bank.replace(/<br>/g, '\n');
-            document.getElementById('clientName').value = doc.clientInfo.name;
-            document.getElementById('clientVoen').value = doc.clientInfo.voen;
-            document.getElementById('clientAddress').value = doc.clientInfo.address;
-            document.getElementById('docNumber').value = doc.docInfo.number;
-            document.getElementById('docDate').value = doc.docInfo.rawDate;
-            
-            items = doc.items;
-            renderTable();
-            generateDocument(doc.type); // Re-generate preview
-        };
-        
-        window.deleteDocument = function(id) {
-            if (!confirm("Bu sənədi silməyə əminsiniz?")) return;
-            let savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
-            savedDocs = savedDocs.filter(d => d.id !== id);
-            localStorage.setItem('documents', JSON.stringify(savedDocs));
-            loadSavedDocuments();
-        };
-
-        docDateInput.valueAsDate = new Date();
-
-        addItemBtn.addEventListener('click', () => {
-            const name = document.getElementById('itemName').value;
-            const quantity = parseFloat(document.getElementById('itemQuantity').value);
-            const price = parseFloat(document.getElementById('itemPrice').value);
-
-            if (name && quantity > 0 && price >= 0) {
-                items.push({ name, quantity, price });
-                document.getElementById('itemName').value = '';
-                document.getElementById('itemQuantity').value = '1';
-                document.getElementById('itemPrice').value = '0';
-                renderTable();
-            } else {
-                alert('Məhsul məlumatlarını düzgün daxil edin.');
-            }
-        });
-
-        function renderTable() {
-            itemsTbody.innerHTML = '';
-            items.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.price.toFixed(2)}</td>
-                    <td>${(item.quantity * item.price).toFixed(2)}</td>
-                    <td><button class="delete-btn" onclick="deleteItem(${index})">✖</button></td>`;
-                itemsTbody.appendChild(row);
-            });
-            calculateTotals();
-        }
-
-        window.deleteItem = function(index) {
-            items.splice(index, 1);
-            renderTable();
-        };
-
-        function calculateTotals() {
-            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`;
-        }
-        
-        // Add global generateDocument function
-        window.generateDocument = function(type) {
+        saveProjectBtn.addEventListener('click', () => {
             if (items.length === 0) {
-                alert('Sənəd hazırlamaq üçün məhsul/xidmət əlavə edin.');
+                alert('Layihə yaratmaq üçün məhsul/xidmət əlavə edin.');
                 return;
             }
 
-            const companyInfo = {
-                logo: document.getElementById('companyLogo').value,
-                name: document.getElementById('companyName').value,
-                voen: document.getElementById('companyVoen').value,
-                address: document.getElementById('companyAddress').value,
-                bank: document.getElementById('companyBank').value.replace(/\n/g, '<br>')
+            const rawData = {
+                companyInfo: {
+                    logo: document.getElementById('companyLogo').value,
+                    name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value,
+                    address: document.getElementById('companyAddress').value, bank: document.getElementById('companyBank').value
+                },
+                clientInfo: {
+                    name: document.getElementById('clientName').value, voen: document.getElementById('clientVoen').value, address: document.getElementById('clientAddress').value
+                },
+                docInfo: {
+                    number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value
+                },
+                items: items
             };
-            const clientInfo = {
-                name: document.getElementById('clientName').value,
-                voen: document.getElementById('clientVoen').value,
-                address: document.getElementById('clientAddress').value
-            };
-            const docInfo = {
-                number: document.getElementById('docNumber').value,
-                date: new Date(document.getElementById('docDate').value).toLocaleDateString('az-AZ', { year: 'numeric', month: 'long', day: 'numeric' }),
-                rawDate: document.getElementById('docDate').value
+            
+            const generatedDocs = {
+                quote: generateDocumentHTML('quote', rawData),
+                act: generateDocumentHTML('act', rawData),
+                invoice: generateDocumentHTML('invoice', rawData)
             };
 
+            const projects = getProjects();
+            if (currentEditingProjectId) {
+                const projectIndex = projects.findIndex(p => p.id === currentEditingProjectId);
+                if (projectIndex > -1) {
+                    projects[projectIndex].rawData = rawData;
+                    projects[projectIndex].generatedDocs = generatedDocs;
+                    projects[projectIndex].clientInfo = rawData.clientInfo;
+                    projects[projectIndex].docInfo = rawData.docInfo;
+                }
+            } else {
+                const newProject = {
+                    id: `${Date.now()}`,
+                    timestamp: Date.now(),
+                    clientInfo: rawData.clientInfo,
+                    docInfo: rawData.docInfo,
+                    rawData: rawData,
+                    generatedDocs: generatedDocs
+                };
+                projects.push(newProject);
+            }
+            
+            saveProjects(projects);
+            resetForm();
+        });
+
+        function generateDocumentHTML(type, data) {
+            const { companyInfo, clientInfo, docInfo, items } = data;
+            const docDate = new Date(docInfo.rawDate).toLocaleDateString('az-AZ', { year: 'numeric', month: 'long', day: 'numeric' });
+            
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
             
             let docTitle = '';
-            let itemsTableHTML = '';
-            let totalsHTML = '';
-            let footerHTML = '';
-
             switch(type){
                 case 'quote': docTitle = 'Qiymət Təklifi'; break;
                 case 'act': docTitle = 'Təhvil-Təslim Aktı'; break;
                 case 'invoice': docTitle = 'Hesab-Faktura'; break;
             }
             
-            // Build Items Table
-            itemsTableHTML = `
+            const itemsTableHTML = `
                 <table class="doc-table">
-                    <thead><tr>
-                        <th>№</th><th>Adı</th><th>Miqdar</th>
+                    <thead><tr><th>№</th><th>Adı</th><th>Miqdar</th>
                         ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}
                     </tr></thead>
-                    <tbody>
-                        ${items.map((item, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${item.name}</td>
-                                <td>${item.quantity}</td>
-                                ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}
-                            </tr>`).join('')}
-                    </tbody>
-                </table>`;
+                    <tbody>${items.map((item, index) => `
+                        <tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td>
+                            ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}
+                        </tr>`).join('')}
+                    </tbody></table>`;
             
-            // Build Totals Table
-            if(type !== 'act') {
-                totalsHTML = `
-                <div class="doc-totals">
-                    <table>
-                        <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
-                        <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
-                        <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
-                    </table>
+            const totalsHTML = type !== 'act' ? `
+                <div class="doc-totals"><table>
+                    <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
+                    <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
+                    <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
+                </table></div>` : '';
+
+            const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;">
+                <div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
+                <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div>
+                </div>` : `<div class="doc-footer" style="display:flex; justify-content:space-between;">
+                <div>${type === 'invoice' ? `<strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank.replace(/\n/g, '<br>')}</small>`: ''}</div>
+                <div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
                 </div>`;
-            }
-
-            // Build Footer
-            if(type === 'act') {
-                 footerHTML = `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;">
-                    <div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
-                    <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div>
-                 </div>`;
-            } else {
-                 footerHTML = `<div class="doc-footer" style="display:flex; justify-content:space-between;">
-                    <div>${type === 'invoice' ? `<strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank}</small>`: ''}</div>
-                    <div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
-                 </div>`;
-            }
-
-            outputDiv.classList.remove('placeholder');
-            outputDiv.innerHTML = `
+            
+            return `<div class="printable-area">
                 <div class="doc-header">
                     <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3>${companyInfo.name}</h3>`}</div>
-                    <div class="doc-title">
-                        <h2>${docTitle}</h2>
-                        <p>№: ${docInfo.number}<br>Tarix: ${docInfo.date}</p>
-                    </div>
+                    <div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div>
                 </div>
                 <div class="doc-parties">
                     <div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div>
                     <div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div>
                 </div>
-                ${itemsTableHTML}
-                ${totalsHTML}
-                ${footerHTML}
-                <div id="printBtnContainer" style="text-align:center; margin-top: 30px; padding-top:20px; clear:both;">
-                    <button class="btn btn-primary" onclick="window.print()">Sənədi Çap Et</button>
-                </div>`;
-            
-            const fullDocumentData = {
-                id: `${Date.now()}`,
-                timestamp: new Date().toISOString(),
-                type, companyInfo, clientInfo, docInfo, items,
-            };
-
-            saveDocument(fullDocumentData);
-        };
-
-        const buttonsDiv = document.createElement('div');
-        buttonsDiv.className = 'btn-group';
-        buttonsDiv.innerHTML = `
-            <button class="btn btn-primary" onclick="generateDocument('quote')">Qiymət Təklifi</button>
-            <button class="btn btn-primary" onclick="generateDocument('act')">Təhvil-Təslim Aktı</button>
-            <button class="btn btn-primary" onclick="generateDocument('invoice')">Hesab-Faktura</button>
-        `;
-        document.querySelector('.form-container').appendChild(buttonsDiv);
+                ${itemsTableHTML} ${totalsHTML} ${footerHTML}
+            </div>`;
+        }
         
-        // Initial load
-        loadSavedDocuments();
+        function resetForm() {
+            document.querySelector('.form-container').reset();
+            items = [];
+            currentEditingProjectId = null;
+            saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
+            renderTable();
+            docDateInput.valueAsDate = new Date();
+            updateDocNumber();
+        }
+
+        window.viewProject = function(id) {
+            const projects = getProjects();
+            currentViewingProject = projects.find(p => p.id === id);
+            if (!currentViewingProject) return;
+            
+            viewModal.style.display = 'flex';
+            showDocumentInModal('quote');
+        }
+
+        function showDocumentInModal(type) {
+            modalBody.innerHTML = currentViewingProject.generatedDocs[type];
+            modalTabs.querySelectorAll('button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+        }
+        
+        modalTabs.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                showDocumentInModal(e.target.dataset.type);
+            }
+        });
+
+        closeModalBtn.addEventListener('click', () => viewModal.style.display = 'none');
+        viewModal.addEventListener('click', (e) => {
+            if (e.target === viewModal) viewModal.style.display = 'none';
+        });
+
+        printModalBtn.addEventListener('click', () => {
+             const printContents = modalBody.innerHTML;
+             const originalContents = document.body.innerHTML;
+             document.body.innerHTML = printContents;
+             window.print();
+             document.body.innerHTML = originalContents;
+             // We need to re-initialize event listeners and state after overriding body content. This is a complex problem. A better way is using a hidden iframe.
+             // For simplicity in this example, we'll just reload the page.
+             window.location.reload();
+        });
+
+        window.loadProjectForEditing = function(id) {
+            const projects = getProjects();
+            const project = projects.find(p => p.id === id);
+            if (!project) return;
+            
+            const data = project.rawData;
+            document.getElementById('companyLogo').value = data.companyInfo.logo || '';
+            document.getElementById('companyName').value = data.companyInfo.name;
+            document.getElementById('companyVoen').value = data.companyInfo.voen;
+            document.getElementById('companyAddress').value = data.companyInfo.address;
+            document.getElementById('companyBank').value = data.companyInfo.bank;
+            document.getElementById('clientName').value = data.clientInfo.name;
+            document.getElementById('clientVoen').value = data.clientInfo.voen;
+            document.getElementById('clientAddress').value = data.clientInfo.address;
+            document.getElementById('docNumber').value = data.docInfo.number;
+            document.getElementById('docDate').value = data.docInfo.rawDate;
+            
+            items = data.items;
+            renderTable();
+            
+            currentEditingProjectId = id;
+            saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
+        }
+        
+        window.deleteProject = function(id) {
+            if (!confirm("Bu layihəni və ona aid bütün sənədləri silməyə əminsiniz?")) return;
+            let projects = getProjects();
+            projects = projects.filter(p => p.id !== id);
+            saveProjects(projects);
+        }
+
+        // --- Initial setup for items table ---
+        docDateInput.valueAsDate = new Date();
+        addItemBtn.addEventListener('click', () => {
+            const name = document.getElementById('itemName').value;
+            const quantity = parseFloat(document.getElementById('itemQuantity').value);
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            if (name && quantity > 0 && price >= 0) {
+                items.push({ name, quantity, price });
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemQuantity').value = '1';
+                document.getElementById('itemPrice').value = '0';
+                renderTable();
+            }
+        });
+        function renderTable() {
+            itemsTbody.innerHTML = '';
+            items.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)}</td><td>${(item.quantity * item.price).toFixed(2)}</td><td><button class="delete-btn" onclick="deleteItem(${index})">✖</button></td>`;
+                itemsTbody.appendChild(row);
+            });
+            calculateTotals();
+        }
+        window.deleteItem = function(index) { items.splice(index, 1); renderTable(); };
+        function calculateTotals() {
+            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`;
+        }
+        
+        // Initial Load
+        renderSavedProjects();
     });
     </script>
 </body>
