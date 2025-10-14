@@ -75,7 +75,6 @@
             color: var(--text-color);
             transition: all 0.2s ease-in-out;
         }
-        /* Tarix xanası üçün xüsusi stil */
         input#docDate { background-color: var(--background-color) !important; color: var(--text-color) !important; }
 
         input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3); }
@@ -230,15 +229,11 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- YENİ HİSSƏ: Flatpickr təqviminin başladılması ---
         flatpickr("#docDate", {
-            altInput: true,       // Görünən və gizli input yaradır
-            altFormat: "d.m.Y",   // İstifadəçinin gördüyü format (dd.mm.yyyy)
-            dateFormat: "Y-m-d",    // Kodun işlədiyi arxa plan formatı (yyyy-mm-dd)
-            defaultDate: "today",   // Standart olaraq bugünkü tarix seçilsin
+            altInput: true, altFormat: "d.m.Y", dateFormat: "Y-m-d", defaultDate: "today",
         });
 
-        const docDateInput = document.getElementById('docDate'); // Bu dəyişən qalır
+        const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
         const subtotalEl = document.getElementById('subtotal');
@@ -339,10 +334,20 @@
             resetForm();
         });
         
+        // --- DƏYİŞİKLİK EDİLMİŞ HİSSƏ ---
         function generateDocumentHTML(type, data) {
             const { companyInfo, clientInfo, docInfo, items } = data;
-            const numericDate = new Date(docInfo.rawDate).toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            // Düzəliş: Tarix formatı üçün universal üsul
+            const dateObj = new Date(docInfo.rawDate);
+            // Saat qurşağı fərqi ilə yaranan xətaların qarşısını almaq üçün:
+            const adjustedDate = new Date(dateObj.valueOf() + dateObj.getTimezoneOffset() * 60 * 1000);
+            const day = String(adjustedDate.getDate()).padStart(2, '0');
+            const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Aylar 0-dan başladığı üçün +1
+            const year = adjustedDate.getFullYear();
+            const numericDate = `${day}.${month}.${year}`;
             const docDate = `${numericDate}-ci il`;
+            
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
@@ -389,10 +394,8 @@
         
         function resetForm() {
             document.querySelector('.form-container').reset();
-            // Flatpickr təqvimini də təmizləyirik
             const fp = document.querySelector("#docDate")._flatpickr;
             fp.setDate("today");
-
             items = []; currentEditingProjectId = null;
             saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
             renderTable(); updateDocNumber();
@@ -438,11 +441,8 @@
             document.getElementById('clientVoen').value = data.clientInfo.voen;
             document.getElementById('clientAddress').value = data.clientInfo.address;
             document.getElementById('docNumber').value = data.docInfo.number;
-            
-            // Flatpickr təqviminə dəyəri təyin edirik
             const fp = document.querySelector("#docDate")._flatpickr;
             fp.setDate(data.docInfo.rawDate);
-
             items = data.items; renderTable();
             currentEditingProjectId = id;
             saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
