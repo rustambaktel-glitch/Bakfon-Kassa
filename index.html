@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru (Firestore Versiya)</title>
+    <title>Sənəd Generatoru (Tema Seçimli)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -11,26 +11,44 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
+        /* İşıqlı Tema (Standart) */
         :root {
-            --primary-color: #4299E1; --primary-hover-color: #63B3ED; --background-color: #1A202C;
-            --secondary-color: #2D3748; --border-color: #4A5568; --text-color: #E2E8F0;
-            --text-muted-color: #A0AEC0; --danger-color: #E53E3E;
+            --primary-color: #3182CE;
+            --primary-hover-color: #2B6CB0;
+            --background-color: #F7FAFC;
+            --secondary-color: #FFFFFF;
+            --border-color: #E2E8F0;
+            --text-color: #1A202C;
+            --text-muted-color: #718096;
+            --danger-color: #E53E3E;
+            --input-bg-color: #FFFFFF;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        body { font-family: var(--font-family); background-color: var(--background-color); color: var(--text-color); margin: 0; font-size: 14px; }
+
+        /* Qaranlıq Tema Stili */
+        body.dark-theme {
+            --primary-color: #4299E1;
+            --primary-hover-color: #63B3ED;
+            --background-color: #1A202C;
+            --secondary-color: #2D3748;
+            --border-color: #4A5568;
+            --text-color: #E2E8F0;
+            --text-muted-color: #A0AEC0;
+            --input-bg-color: #1A202C;
+        }
+
+        body { font-family: var(--font-family); background-color: var(--background-color); color: var(--text-color); margin: 0; font-size: 14px; transition: background-color 0.3s, color 0.3s; }
         .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding: 25px; height: 100vh; box-sizing: border-box; }
-        .form-container, .sidebar { background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; overflow-y: auto; height: calc(100vh - 50px); }
+        .form-container, .sidebar { background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; overflow-y: auto; height: calc(100vh - 50px); transition: background-color 0.3s, border-color 0.3s; }
         h1, h2 { color: var(--text-color); margin-top: 0; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        h1 { font-size: 24px; margin-bottom: 25px; color: white; }
+        h1 { font-size: 24px; margin-bottom: 25px; color: var(--text-color); }
         h2 { font-size: 20px; margin-bottom: 20px; text-align: left; }
         fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
         legend { font-weight: 600; color: var(--primary-color); padding: 0 10px; margin-left: 5px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group.full-width { grid-column: 1 / -1; }
         label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-muted-color); }
-        input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: var(--background-color); color: var(--text-color); transition: all 0.2s ease-in-out; }
-        input#docDate { background-color: var(--background-color) !important; color: var(--text-color) !important; }
-        input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3); }
+        input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); transition: all 0.2s ease-in-out; }
+        input#docDate { background-color: var(--input-bg-color) !important; color: var(--text-color) !important; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 30%, transparent); }
         .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
         .items-table th { background-color: var(--background-color); font-weight: 600; }
@@ -39,7 +57,6 @@
         .btn { padding: 12px 25px; font-size: 16px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; color: #ffffff; background-color: var(--primary-color); width:100%; transition: background-color 0.2s; }
         .btn:hover { background-color: var(--primary-hover-color); }
         .custom-file-upload { border: 1px solid var(--border-color); display: inline-block; padding: 8px 15px; cursor: pointer; border-radius: 6px; background-color: var(--secondary-color); text-align: center; width: 100%; box-sizing: border-box; }
-        input[type="file"] { display: none; }
         #saved-projects-list ul { list-style: none; padding: 0; margin: 0; }
         #saved-projects-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
         .project-actions button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 5px 10px; margin-left: 5px; cursor: pointer; transition: all 0.2s; }
@@ -51,7 +68,7 @@
         .modal-tabs button { padding: 8px 15px; border: 1px solid var(--border-color); background: var(--secondary-color); border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-muted-color); }
         .modal-tabs button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
         .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted-color); }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 20px; background: #525252; margin-top: 15px; border-radius: 6px; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 20px; background: color-mix(in srgb, var(--background-color) 50%, #525252); margin-top: 15px; border-radius: 6px; }
         #printModalBtn { background-color: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
         #printModalBtn:hover { background-color: var(--primary-hover-color); }
         .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; }
@@ -66,6 +83,12 @@
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
         .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; }
         .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
+        .theme-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
         @media print {
             body { background-color: white; margin: 0; }
             .printable-area { box-shadow: none; border: none; padding: 0; margin-top: 40px; }
@@ -77,81 +100,27 @@
         <div class="form-container">
             <h1>Sənəd Generatoru</h1>
             <input type="hidden" id="projectId">
-            <fieldset>
-                <legend>Bank Rekvizitləri</legend>
-                <div class="form-group full-width"><label>Bank və hesab məlumatlarınız</label><textarea id="companyBank" rows="4"></textarea></div>
-            </fieldset>
-            <fieldset>
-                <legend>Şirkət Məlumatları</legend>
-                <div class="form-grid">
-                    <div class="form-group full-width"><label for="companyLogo">Şirkət Loqo URL</label><input type="text" id="companyLogo" placeholder="https://example.com/logo.png"></div>
-                    <div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" placeholder="Şirkətinizin Adı"></div>
-                    <div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" placeholder="Şirkətinizin VÖEN-i"></div>
-                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" placeholder="Şirkətinizin ünvanı"></div>
-                </div>
-            </fieldset>
-            <fieldset>
-                <legend>Müştəri Məlumatları</legend>
-                <div class="form-grid">
-                    <div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName"></div>
-                    <div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen"></div>
-                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress"></div>
-                </div>
-            </fieldset>
-            <fieldset>
-                <legend>Sənəd Məlumatları</legend>
-                 <div class="form-grid">
-                    <div class="form-group"><label>Sənəd Nömrəsi</label><input type="text" id="docNumber"></div>
-                    <div class="form-group"><label>Tarix</label><input type="text" id="docDate" placeholder="Tarixi seçin..."></div>
-                 </div>
-            </fieldset>
-            <fieldset>
-                <legend>Məhsullar / Xidmətlər</legend>
-                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 10px;">
-                    <div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div>
-                    <div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div>
-                    <div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div>
-                    <button id="addItemBtn" style="padding: 10px; font-size: 20px; border: none; border-radius: 6px; cursor: pointer; color: white; background-color: var(--primary-color); line-height: 1;">+</button>
-                </div>
-                <table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table>
-                <div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div>
-            </fieldset>
-            <fieldset>
-                <legend>Excel-dən Məhsul Importu</legend>
-                <label for="excel-input" class="custom-file-upload">Excel Faylı Seçin (.xlsx, .xls)</label>
-                <input type="file" id="excel-input" accept=".xlsx, .xls">
-                <p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.</p>
-            </fieldset>
+            <fieldset><legend>Bank Rekvizitləri</legend><div class="form-group full-width"><label>Bank və hesab məlumatlarınız</label><textarea id="companyBank" rows="4"></textarea></div></fieldset>
+            <fieldset><legend>Şirkət Məlumatları</legend><div class="form-grid"><div class="form-group full-width"><label for="companyLogo">Şirkət Loqo URL</label><input type="text" id="companyLogo" placeholder="https://example.com/logo.png"></div><div class="form-group"><label>Şirkətin adı</label><input type="text" id="companyName" placeholder="Şirkətinizin Adı"></div><div class="form-group"><label>VÖEN</label><input type="text" id="companyVoen" placeholder="Şirkətinizin VÖEN-i"></div><div class="form-group full-width"><label>Ünvan</label><input type="text" id="companyAddress" placeholder="Şirkətinizin ünvanı"></div></div></fieldset>
+            <fieldset><legend>Müştəri Məlumatları</legend><div class="form-grid"><div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName"></div><div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen"></div><div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress"></div></div></fieldset>
+            <fieldset><legend>Sənəd Məlumatları</legend><div class="form-grid"><div class="form-group"><label>Sənəd Nömrəsi</label><input type="text" id="docNumber"></div><div class="form-group"><label>Tarix</label><input type="text" id="docDate" placeholder="Tarixi seçin..."></div></div></fieldset>
+            <fieldset><legend>Məhsullar / Xidmətlər</legend><div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: end; gap: 10px;"><div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div><div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div><div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div><button id="addItemBtn" style="padding: 10px; font-size: 20px; border: none; border-radius: 6px; cursor: pointer; color: white; background-color: var(--primary-color); line-height: 1;">+</button></div><table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table><div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div></fieldset>
+            <fieldset><legend>Excel-dən Məhsul Importu</legend><label for="excel-input" class="custom-file-upload">Excel Faylı Seçin (.xlsx, .xls)</label><input type="file" id="excel-input" accept=".xlsx, .xls"><p style="font-size: 12px; color: var(--text-muted-color); text-align: center; margin-top: 10px;">Fayl formatı: A Sütunu = Ad, B Sütunu = Miqdar, C Sütunu = Qiymət.</p></fieldset>
             <button class="btn" id="saveProjectBtn">Sənədləri Hazırla və Yadda Saxla</button>
         </div>
         <div class="sidebar">
-            <h2>Saxlanılan Layihələr</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Saxlanılan Layihələr</h2>
+                <label class="theme-switch" title="Temanı dəyiş"><input type="checkbox" id="theme-toggle"><span class="slider"></span></label>
+            </div>
             <div id="saved-projects-list"><ul></ul></div>
         </div>
     </div>
-    <div class="modal-overlay" id="viewModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-tabs" id="modalTabs">
-                    <button data-type="quote" class="active">Qiymət Razılaşdırma Protokolu</button>
-                    <button data-type="act">Təhvil-Təslim Aktı</button>
-                    <button data-type="invoice">Hesab-Faktura</button>
-                </div>
-                 <div>
-                    <button id="printModalBtn">Çap Et</button>
-                    <button class="modal-close" id="closeModalBtn">&times;</button>
-                </div>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="viewModal"><div class="modal-content"><div class="modal-header"><div class="modal-tabs" id="modalTabs"><button data-type="quote" class="active">Qiymət Razılaşdırma Protokolu</button><button data-type="act">Təhvil-Təslim Aktı</button><button data-type="invoice">Hesab-Faktura</button></div><div><button id="printModalBtn">Çap Et</button><button class="modal-close" id="closeModalBtn">&times;</button></div></div><div class="modal-body" id="modalBody"></div></div></div>
 
     <script>
-        // --- Firebase Başlatma ---
         const firebaseConfig = {
-            // ⚠️ DİQQƏT: BU SƏTRİ ÖZ AÇARINIZLA DƏYİŞİN! SİZİN KONSOLDAN GÖTÜRDÜYÜNÜZ AÇAR BURADA OLMALIDIR.
-            apiKey: "AIzaSyBbagg2DVzviydqmYzwdG3DbO9BO6aoA8A",
-            // ------------------------------------------------------------------------------------------
+            apiKey: "AIzaSyBbagg2DVzviydqmYzwdG3DbO9BO6aoA8A", // ⚠️ BU HİSSƏNİ ÖZ AÇARINIZLA DƏYİŞİN!
             authDomain: "sened-generatoru.firebaseapp.com",
             projectId: "sened-generatoru",
             storageBucket: "sened-generatoru.appspot.com",
@@ -160,12 +129,26 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        // --- Firebase Başlatma Sonu ---
 
     document.addEventListener('DOMContentLoaded', () => {
-        flatpickr("#docDate", {
-            altInput: true, altFormat: "d.m.Y", dateFormat: "Y-m-d", defaultDate: "today",
+        flatpickr("#docDate", { altInput: true, altFormat: "d.m.Y", dateFormat: "Y-m-d", defaultDate: "today" });
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.checked = true;
+        }
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+            }
         });
+        
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
@@ -197,8 +180,7 @@
                 voen: document.getElementById('companyVoen').value,
                 address: document.getElementById('companyAddress').value
             };
-            db.collection('settings').doc('seller').set(sellerInfo)
-              .catch(error => console.error("Satıcı məlumatını saxlama xətası: ", error));
+            db.collection('settings').doc('seller').set(sellerInfo).catch(error => console.error("Satıcı məlumatını saxlama xətası: ", error));
         }
 
         function loadSellerInfo() {
@@ -217,6 +199,27 @@
         sellerFields.forEach(field => { field.addEventListener('input', saveSellerInfo); });
         loadSellerInfo(); 
 
+        excelInput.addEventListener('change', (event) => { /* ... eyni kod ... */ });
+        
+        function listenForProjects() { /* ... eyni kod ... */ }
+        function updateDocNumber(projects) { /* ... eyni kod ... */ }
+        saveProjectBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
+        function generateDocumentHTML(type, data) { /* ... eyni kod ... */ }
+        function resetForm() { /* ... eyni kod ... */ }
+        window.viewProject = function(id) { /* ... eyni kod ... */ }
+        function showDocumentInModal(type) { /* ... eyni kod ... */ }
+        modalTabs.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') showDocumentInModal(e.target.dataset.type); });
+        closeModalBtn.addEventListener('click', () => viewModal.style.display = 'none');
+        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) viewModal.style.display = 'none'; });
+        printModalBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
+        window.loadProjectForEditing = function(id) { /* ... eyni kod ... */ }
+        window.deleteProject = function(id) { /* ... eyni kod ... */ }
+        addItemBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
+        function renderTable() { /* ... eyni kod ... */ }
+        window.deleteItem = function(index) { items.splice(index, 1); renderTable(); };
+        function calculateTotals() { /* ... eyni kod ... */ }
+        
+        // --- Tam Funksional Kodlar (Yuxarıda qısaldılmış hissələrin tam versiyası) ---
         excelInput.addEventListener('change', (event) => {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -245,67 +248,35 @@
         function listenForProjects() {
             db.collection('projects').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
                 const projects = [];
-                snapshot.forEach(doc => {
-                    projects.push({ id: doc.id, ...doc.data() });
-                });
-                
+                snapshot.forEach(doc => { projects.push({ id: doc.id, ...doc.data() }); });
                 savedProjectsList.innerHTML = '';
                 projects.forEach(p => {
                     const li = document.createElement('li');
-                    li.innerHTML = `
-                        <span>
-                            <strong>${p.clientInfo.name}</strong><br>
-                            <small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small>
-                        </span>
-                        <span class="project-actions">
-                            <button onclick="viewProject('${p.id}')">Bax</button>
-                            <button onclick="loadProjectForEditing('${p.id}')">Yüklə</button>
-                            <button onclick="deleteProject('${p.id}')">Sil</button>
-                        </span>`;
+                    li.innerHTML = `<span><strong>${p.clientInfo.name}</strong><br><small style="color: var(--text-muted-color);">#${p.docInfo.number} (${new Date(p.timestamp).toLocaleDateString('az-AZ', {day:'2-digit', month:'2-digit', year:'numeric'})})</small></span><span class="project-actions"><button onclick="viewProject('${p.id}')">Bax</button><button onclick="loadProjectForEditing('${p.id}')">Yüklə</button><button onclick="deleteProject('${p.id}')">Sil</button></span>`;
                     savedProjectsList.appendChild(li);
                 });
                 updateDocNumber(projects);
-            }, error => {
-                console.error("Layihələri dinləmə xətası: ", error);
-            });
+            }, error => { console.error("Layihələri dinləmə xətası: ", error); });
         }
 
         function updateDocNumber(projects) {
             if (currentEditingProjectId) return;
             let lastNum = 0;
-            if (projects && projects.length > 0) {
-                 lastNum = Math.max(0, ...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0)));
-            }
+            if (projects && projects.length > 0) { lastNum = Math.max(0, ...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0))); }
             document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`;
         }
         
         saveProjectBtn.addEventListener('click', () => {
             if (items.length === 0) { alert('Layihə yaratmaq üçün məhsul/xidmət əlavə edin.'); return; }
             const rawData = {
-                companyInfo: {
-                    logo: document.getElementById('companyLogo').value, name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value,
-                    address: document.getElementById('companyAddress').value, bank: document.getElementById('companyBank').value
-                },
+                companyInfo: { logo: document.getElementById('companyLogo').value, name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value, address: document.getElementById('companyAddress').value, bank: document.getElementById('companyBank').value },
                 clientInfo: { name: document.getElementById('clientName').value, voen: document.getElementById('clientVoen').value, address: document.getElementById('clientAddress').value },
                 docInfo: { number: document.getElementById('docNumber').value, rawDate: document.getElementById('docDate').value },
                 items: items
             };
-            
             const projectId = currentEditingProjectId || `${Date.now()}`;
-            const newProject = {
-                timestamp: parseInt(projectId),
-                clientInfo: rawData.clientInfo,
-                docInfo: rawData.docInfo,
-                rawData: rawData,
-            };
-            
-            db.collection('projects').doc(projectId).set(newProject).then(() => {
-                console.log("Layihə uğurla saxlanıldı!");
-                resetForm();
-            }).catch(error => {
-                console.error("Layihəni saxlama xətası: ", error);
-                alert("Xəta baş verdi, layihə saxlanılmadı.");
-            });
+            const newProject = { timestamp: parseInt(projectId), clientInfo: rawData.clientInfo, docInfo: rawData.docInfo, rawData: rawData };
+            db.collection('projects').doc(projectId).set(newProject).then(() => { console.log("Layihə uğurla saxlanıldı!"); resetForm(); }).catch(error => { console.error("Layihəni saxlama xətası: ", error); alert("Xəta baş verdi, layihə saxlanılmadı."); });
         });
         
         function generateDocumentHTML(type, data) {
@@ -317,7 +288,6 @@
             const year = adjustedDate.getFullYear();
             const numericDate = `${day}.${month}.${year}`;
             const docDate = `${numericDate}-ci il`;
-            
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
@@ -328,70 +298,31 @@
                 case 'invoice': docTitle = 'Hesab-Faktura'; break;
             }
             let bankDetailsHTML = '';
-            if (type === 'invoice' && companyInfo.bank) {
-                bankDetailsHTML = `<div class="doc-bank-details">
-                    <strong>Bank Rekvizitləri:</strong><br>
-                    <small>${companyInfo.bank.replace(/\n/g, '<br>')}</small>
-                </div>`;
-            }
+            if (type === 'invoice' && companyInfo.bank) { bankDetailsHTML = `<div class="doc-bank-details"><strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank.replace(/\n/g, '<br>')}</small></div>`; }
             const itemsTableHTML = `<table class="doc-table"><thead><tr><th>№</th><th>Adı</th><th>Miqdar</th>
                 ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}</tr></thead>
                 <tbody>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td>
                 ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}</tr>`).join('')}
                 </tbody></table>`;
-            const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table>
-                <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
-                <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
-                <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
-                </table></div>` : '';
-            const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;">
-                <div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
-                <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>`
-                : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;">
-                <strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`;
-            return `<div class="printable-area">
-                <div class="doc-header">
-                    <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div>
-                    <div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div>
-                </div>
-                ${bankDetailsHTML}
-                <div class="doc-parties">
-                    <div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div>
-                    <div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div>
-                </div>
-                ${itemsTableHTML}${totalsHTML}${footerHTML}</div>`;
+            const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table><tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr><tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr><tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr></table></div>` : '';
+            const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;"><div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div><div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>` : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`;
+            return `<div class="printable-area"><div class="doc-header"><div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div><div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div></div>${bankDetailsHTML}<div class="doc-parties"><div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div><div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div></div>${itemsTableHTML}${totalsHTML}${footerHTML}</div>`;
         }
-        
         function resetForm() {
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientVoen').value = '';
-            document.getElementById('clientAddress').value = '';
-            document.getElementById('projectId').value = '';
-            const fp = document.querySelector("#docDate")._flatpickr;
-            fp.setDate("today");
+            document.getElementById('clientName').value = ''; document.getElementById('clientVoen').value = ''; document.getElementById('clientAddress').value = ''; document.getElementById('projectId').value = '';
+            const fp = document.querySelector("#docDate")._flatpickr; fp.setDate("today");
             items = []; currentEditingProjectId = null;
             saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
-            renderTable(); 
-            listenForProjects();
+            renderTable(); listenForProjects();
         }
-        
         window.viewProject = function(id) {
-            db.collection('projects').doc(id).get().then(doc => {
-                if (!doc.exists) return;
-                currentViewingProject = { id: doc.id, ...doc.data() };
-                viewModal.style.display = 'flex';
-                showDocumentInModal('quote');
-            });
+            db.collection('projects').doc(id).get().then(doc => { if (!doc.exists) return; currentViewingProject = { id: doc.id, ...doc.data() }; viewModal.style.display = 'flex'; showDocumentInModal('quote'); });
         }
         function showDocumentInModal(type) {
             const html = generateDocumentHTML(type, currentViewingProject.rawData);
             modalBody.innerHTML = html;
             modalTabs.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
         }
-        modalTabs.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') showDocumentInModal(e.target.dataset.type); });
-        closeModalBtn.addEventListener('click', () => viewModal.style.display = 'none');
-        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) viewModal.style.display = 'none'; });
-        
         printModalBtn.addEventListener('click', () => {
              const printContent = modalBody.querySelector('.printable-area').outerHTML;
              const styles = document.head.querySelectorAll('style, link[rel="stylesheet"]');
@@ -406,40 +337,20 @@
                 setTimeout(() => { printWindow.focus(); printWindow.print(); }, 500);
              } else { alert("Popup pəncərələr bloklanıb. Zəhmət olmasa, bu sayt üçün popup-lara icazə verin."); }
         });
-
         window.loadProjectForEditing = function(id) {
             db.collection('projects').doc(id).get().then(doc => {
-                if(!doc.exists) return;
-                const project = doc.data();
-                const data = project.rawData;
-                document.getElementById('clientName').value = data.clientInfo.name;
-                document.getElementById('clientVoen').value = data.clientInfo.voen;
-                document.getElementById('clientAddress').value = data.clientInfo.address;
+                if(!doc.exists) return; const project = doc.data(); const data = project.rawData;
+                document.getElementById('clientName').value = data.clientInfo.name; document.getElementById('clientVoen').value = data.clientInfo.voen; document.getElementById('clientAddress').value = data.clientInfo.address;
                 document.getElementById('docNumber').value = data.docInfo.number;
-                const fp = document.querySelector("#docDate")._flatpickr;
-                fp.setDate(data.docInfo.rawDate);
+                const fp = document.querySelector("#docDate")._flatpickr; fp.setDate(data.docInfo.rawDate);
                 items = data.items; renderTable();
-                currentEditingProjectId = id;
-                saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
+                currentEditingProjectId = id; saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
             });
         }
-        
-        window.deleteProject = function(id) {
-            if (!confirm("Bu layihəni və ona aid bütün sənədləri silməyə əminsiniz?")) return;
-            db.collection('projects').doc(id).delete().catch(error => console.error("Layihəni silmə xətası: ", error));
-        }
-
+        window.deleteProject = function(id) { if (!confirm("Bu layihəni və ona aid bütün sənədləri silməyə əminsiniz?")) return; db.collection('projects').doc(id).delete().catch(error => console.error("Layihəni silmə xətası: ", error)); }
         addItemBtn.addEventListener('click', () => {
-            const name = document.getElementById('itemName').value;
-            const quantity = parseFloat(document.getElementById('itemQuantity').value);
-            const price = parseFloat(document.getElementById('itemPrice').value);
-            if (name && quantity > 0 && price >= 0) {
-                items.push({ name, quantity, price });
-                document.getElementById('itemName').value = '';
-                document.getElementById('itemQuantity').value = '1';
-                document.getElementById('itemPrice').value = '0';
-                renderTable();
-            }
+            const name = document.getElementById('itemName').value; const quantity = parseFloat(document.getElementById('itemQuantity').value); const price = parseFloat(document.getElementById('itemPrice').value);
+            if (name && quantity > 0 && price >= 0) { items.push({ name, quantity, price }); document.getElementById('itemName').value = ''; document.getElementById('itemQuantity').value = '1'; document.getElementById('itemPrice').value = '0'; renderTable(); }
         });
         function renderTable() {
             itemsTbody.innerHTML = '';
