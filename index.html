@@ -3,86 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru</title>
+    <title>Korporativ Sənəd Generatoru</title>
     <style>
-        /* CSS Kodları - Dizayn üçün */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        
+        :root {
+            --primary-color: #005A9C;
+            --secondary-color: #F3F4F6;
+            --border-color: #D1D5DB;
+            --text-color: #1F2937;
+            --background-color: #FFFFFF;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
+            font-family: var(--font-family);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
             margin: 0;
+            font-size: 14px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
         }
 
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 25px 30px;
+        .form-container, .sidebar {
+            background-color: var(--background-color);
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 25px;
+            overflow-y: auto;
+            height: calc(100vh - 40px);
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
         }
 
-        h1, h2 {
-            color: #0056b3;
+        h1 {
             text-align: center;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
         }
 
         fieldset {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 20px;
-            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
 
         legend {
-            font-weight: 700;
-            color: #0056b3;
-            padding: 0 10px;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 8px;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
         }
 
         label {
+            display: block;
             margin-bottom: 5px;
             font-weight: 500;
         }
 
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
+        input, textarea, select {
             width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
             box-sizing: border-box;
-        }
-        
-        input:focus, textarea:focus {
-            border-color: #0056b3;
-            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 80px;
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 90, 156, 0.2);
         }
 
         .items-table {
@@ -92,165 +105,147 @@
         }
 
         .items-table th, .items-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+            border: 1px solid var(--border-color);
+            padding: 8px;
             text-align: left;
         }
 
         .items-table th {
-            background-color: #0056b3;
-            color: white;
+            background-color: var(--secondary-color);
+            font-weight: 600;
         }
 
-        .items-table tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        
         .delete-btn {
-            background-color: #dc3545;
-            color: white;
+            background: none;
             border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            color: #EF4444;
             cursor: pointer;
+            font-size: 16px;
         }
 
         .totals {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: right;
-            font-size: 1.1em;
-            font-weight: 500;
         }
 
-        #generator-buttons {
-            text-align: center;
-            margin: 30px 0;
+        .btn-group {
             display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .btn {
-            padding: 12px 25px;
-            font-size: 1rem;
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 600;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             color: white;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s;
+        }
+        .btn-primary { background-color: #3B82F6; }
+        .btn-primary:hover { background-color: #2563EB; }
+        .btn-add { background-color: #10B981; }
+        .btn-add:hover { background-color: #059669; }
+
+        /* Sidebar Styles */
+        #saved-documents-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
-        .btn-primary { background-color: #007bff; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-success { background-color: #28a745; }
-        .btn-success:hover { background-color: #1e7e34; }
-        .btn-info { background-color: #17a2b8; }
-        .btn-info:hover { background-color: #117a8b; }
-        .btn-add { background-color: #218838; }
+        #saved-documents-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        #saved-documents-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .doc-actions button {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
 
+        /* Output Styles */
         #output {
-            margin-top: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            height: auto;
+            min-height: 400px;
             padding: 30px;
-            border: 1px solid #ccc;
-            background: #fff;
-            display: none; /* Initially hidden */
         }
         
-        #output h2 {
-             text-align: center;
-             color: #333;
-             font-size: 1.8em;
-             border-bottom: 2px solid #555;
-             padding-bottom: 10px;
-        }
-        
-        .output-header {
+        #output.placeholder {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-        }
-        
-        .output-header div {
-            width: 48%;
-        }
-
-        .output-header h3 {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            color: #0056b3;
-        }
-        
-        .document-info {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .signature-area {
-            margin-top: 60px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .signature-box {
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            width: 45%;
-        }
-        .signature-box p {
-            margin-top: 50px;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-            font-weight: bold;
+            color: #9CA3AF;
         }
 
-        /* Print Styles */
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px; }
+        .doc-header img { max-width: 150px; max-height: 70px; }
+        .doc-title { text-align: right; }
+        .doc-title h2 { margin: 0; font-size: 28px; }
+        .doc-parties { display: flex; justify-content: space-between; margin-top: 25px; }
+        .doc-parties div { width: 48%; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; }
+        .doc-table th, .doc-table td { border: 1px solid #dee2e6; padding: 8px; }
+        .doc-table th { background-color: #f8f9fa; }
+        .doc-totals { margin-top: 25px; float: right; width: 250px; }
+        .doc-totals table { width: 100%; }
+        .doc-totals td { padding: 5px; }
+        .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); clear: both; }
+
         @media print {
-            body {
-                background-color: #fff;
-                padding: 0;
-                margin: 0;
-            }
-            .container {
-                box-shadow: none;
-                max-width: 100%;
-                padding: 0;
-            }
-            .form-section, #generator-buttons, #printBtn, h1 {
-                display: none;
-            }
-            #output {
-                display: block !important;
-                border: none;
-                padding: 0;
-                margin: 0;
-            }
+            body { background: none; }
+            .main-layout { display: block; padding: 0; }
+            .form-container, .sidebar h2, #saved-documents-list, #printBtnContainer { display: none; }
+            .sidebar { box-shadow: none; padding: 0; }
+            #output { border: none; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Avtomatik Sənəd Generatoru</h1>
+    <div class="main-layout">
+        <div class="form-container">
+            <h1>Sənəd Generatoru</h1>
 
-        <div class="form-section">
             <fieldset>
-                <legend>Sizin Şirkət Məlumatları</legend>
+                <legend>Şirkət Məlumatları</legend>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label for="companyName">Şirkətin adı</label>
-                        <input type="text" id="companyName" value="Nümunə MMC">
+                    <div class="form-group full-width">
+                        <label for="companyLogo">Şirkət Loqo URL (boş saxlayın əgər yoxdursa)</label>
+                        <input type="text" id="companyLogo" placeholder="https://example.com/logo.png">
                     </div>
                     <div class="form-group">
-                        <label for="companyVoen">VÖEN</label>
+                        <label>Şirkətin adı</label>
+                        <input type="text" id="companyName" value="TechSolutions MMC">
+                    </div>
+                    <div class="form-group">
+                        <label>VÖEN</label>
                         <input type="text" id="companyVoen" value="1234567890">
                     </div>
-                    <div class="form-group">
-                        <label for="companyAddress">Ünvan</label>
+                    <div class="form-group full-width">
+                        <label>Ünvan</label>
                         <input type="text" id="companyAddress" value="Bakı şəh., Nizami küç. 1">
                     </div>
-                    <div class="form-group">
-                        <label for="companyBank">Bank rekvizitləri (Hesab-Faktura üçün)</label>
-                        <textarea id="companyBank">Bank: Kapital Bank ASC\nH/H: AZ12345...\nM/H: AZ12345...\nKod: 200100\nSWIFT: AIIBAZ2X</textarea>
+                    <div class="form-group full-width">
+                        <label>Bank rekvizitləri</label>
+                        <textarea id="companyBank" rows="3">Bank: Kapital Bank ASC\nH/H: AZ12345...\nM/H: AZ12345...\nKod: 200100</textarea>
                     </div>
                 </div>
             </fieldset>
@@ -258,171 +253,180 @@
             <fieldset>
                 <legend>Müştəri Məlumatları</legend>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label for="clientName">Müştəri şirkətin adı</label>
-                        <input type="text" id="clientName" value="Müştəri Qrup MMC">
-                    </div>
-                    <div class="form-group">
-                        <label for="clientVoen">VÖEN</label>
-                        <input type="text" id="clientVoen" value="9876543210">
-                    </div>
-                    <div class="form-group">
-                        <label for="clientAddress">Ünvan</label>
-                        <input type="text" id="clientAddress" value="Gəncə şəh., Atatürk pr. 5">
-                    </div>
+                    <div class="form-group"><label>Müştəri şirkətin adı</label><input type="text" id="clientName" value="Müştəri Qrup MMC"></div>
+                    <div class="form-group"><label>VÖEN</label><input type="text" id="clientVoen" value="9876543210"></div>
+                    <div class="form-group full-width"><label>Ünvan</label><input type="text" id="clientAddress" value="Gəncə şəh., Atatürk pr. 5"></div>
                 </div>
             </fieldset>
             
             <fieldset>
                 <legend>Sənəd Məlumatları</legend>
                  <div class="form-grid">
-                     <div class="form-group">
-                        <label for="docNumber">Sənəd Nömrəsi</label>
-                        <input type="text" id="docNumber" value="SN-001">
-                    </div>
-                    <div class="form-group">
-                        <label for="docDate">Tarix</label>
-                        <input type="date" id="docDate">
-                    </div>
+                    <div class="form-group"><label>Sənəd Nömrəsi</label><input type="text" id="docNumber"></div>
+                    <div class="form-group"><label>Tarix</label><input type="date" id="docDate"></div>
                  </div>
             </fieldset>
 
             <fieldset>
                 <legend>Məhsullar / Xidmətlər</legend>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="itemName">Adı</label>
-                        <input type="text" id="itemName" placeholder="Məhsul və ya xidmət">
-                    </div>
-                    <div class="form-group">
-                        <label for="itemQuantity">Miqdar</label>
-                        <input type="number" id="itemQuantity" value="1" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="itemPrice">Vahidin qiyməti (AZN)</label>
-                        <input type="number" id="itemPrice" value="0" min="0">
-                    </div>
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 0.5fr; align-items: end;">
+                    <div class="form-group"><label>Adı</label><input type="text" id="itemName" placeholder="Məhsul və ya xidmət"></div>
+                    <div class="form-group"><label>Miqdar</label><input type="number" id="itemQuantity" value="1" min="0"></div>
+                    <div class="form-group"><label>Qiymət (AZN)</label><input type="number" id="itemPrice" value="0" min="0"></div>
+                    <button id="addItemBtn" class="btn btn-add">Əlavə et</button>
                 </div>
-                <button id="addItemBtn" class="btn btn-add" style="margin-top:10px;">Cədvələ Əlavə et</button>
-                
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th>№</th>
-                            <th>Adı</th>
-                            <th>Miqdar</th>
-                            <th>Qiymət</th>
-                            <th>Cəm</th>
-                            <th>Sil</th>
-                        </tr>
-                    </thead>
-                    <tbody id="itemsTbody">
-                        </tbody>
-                </table>
-                <div class="totals">
-                    <p>Məbləğ (ƏDV-siz): <span id="subtotal">0.00</span> AZN</p>
-                    <p>ƏDV (18%): <span id="vat">0.00</span> AZN</p>
-                    <p><strong>Yekun Məbləğ: <span id="total">0.00</span> AZN</strong></p>
-                </div>
+                <table class="items-table"><thead id="itemsThead"><tr><th>№</th><th>Adı</th><th>Miqdar</th><th>Qiymət</th><th>Cəm</th><th></th></tr></thead><tbody id="itemsTbody"></tbody></table>
+                <div class="totals"><p>Yekun Məbləğ (ƏDV-siz): <strong id="subtotal">0.00 AZN</strong></p></div>
             </fieldset>
         </div>
 
-        <div id="generator-buttons">
-            <button class="btn btn-primary" onclick="generateDocument('quote')">Qiymət Təklifi Hazırla</button>
-            <button class="btn btn-success" onclick="generateDocument('act')">Təhvil-Təslim Aktı Hazırla</button>
-            <button class="btn btn-info" onclick="generateDocument('invoice')">Hesab-Faktura Hazırla</button>
-        </div>
-
-        <div id="output">
+        <div class="sidebar">
+            <h2>Saxlanılan Sənədlər</h2>
+            <div id="saved-documents-list"><ul></ul></div>
+            
+            <div id="output" class="placeholder">
+                <p>Sənədi hazırladıqdan sonra önbaxış burada görünəcək.</p>
             </div>
-
+        </div>
     </div>
 
     <script>
-        // JavaScript Kodları - Məntiq üçün
-
-        // Elementləri əvvəlcədən seçirik
+    document.addEventListener('DOMContentLoaded', () => {
         const docDateInput = document.getElementById('docDate');
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
         const subtotalEl = document.getElementById('subtotal');
-        const vatEl = document.getElementById('vat');
-        const totalEl = document.getElementById('total');
         const outputDiv = document.getElementById('output');
+        const savedDocsList = document.querySelector('#saved-documents-list ul');
 
-        // Məhsulların saxlanacağı array (siyahı)
         let items = [];
-        
-        // Səhifə yüklənəndə bugünkü tarixi təyin et
-        document.addEventListener('DOMContentLoaded', () => {
-            docDateInput.valueAsDate = new Date();
-        });
+        let docIdCounter = 1;
 
-        // "Əlavə et" düyməsinə klikləndikdə
+        // Load data from localStorage on startup
+        function loadSavedDocuments() {
+            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+            savedDocsList.innerHTML = '';
+            savedDocs.forEach(doc => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>
+                        <strong>#${doc.docInfo.number}</strong> - ${doc.clientInfo.name} 
+                        <small>(${new Date(doc.timestamp).toLocaleDateString('az-AZ')})</small>
+                    </span>
+                    <span class="doc-actions">
+                        <button onclick="loadDocument('${doc.id}')">Yüklə</button>
+                        <button onclick="deleteDocument('${doc.id}')">Sil</button>
+                    </span>`;
+                savedDocsList.appendChild(li);
+            });
+            updateDocNumber();
+        }
+
+        function updateDocNumber() {
+            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+            if (savedDocs.length > 0) {
+                const lastDocNum = savedDocs.map(d => parseInt(d.docInfo.number.split('-')[1] || 0)).sort((a,b) => b-a)[0];
+                docIdCounter = (lastDocNum || 0) + 1;
+            } else {
+                docIdCounter = 1;
+            }
+            document.getElementById('docNumber').value = `SN-${String(docIdCounter).padStart(3, '0')}`;
+        }
+        
+        window.saveDocument = function(generatedDoc) {
+            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+            const docIndex = savedDocs.findIndex(d => d.id === generatedDoc.id);
+            if (docIndex > -1) {
+                savedDocs[docIndex] = generatedDoc; // Update existing
+            } else {
+                savedDocs.push(generatedDoc); // Add new
+            }
+            localStorage.setItem('documents', JSON.stringify(savedDocs));
+            loadSavedDocuments();
+        };
+        
+        window.loadDocument = function(id) {
+            const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+            const doc = savedDocs.find(d => d.id === id);
+            if (!doc) return;
+
+            document.getElementById('companyLogo').value = doc.companyInfo.logo || '';
+            document.getElementById('companyName').value = doc.companyInfo.name;
+            document.getElementById('companyVoen').value = doc.companyInfo.voen;
+            document.getElementById('companyAddress').value = doc.companyInfo.address;
+            document.getElementById('companyBank').value = doc.companyInfo.bank.replace(/<br>/g, '\n');
+            document.getElementById('clientName').value = doc.clientInfo.name;
+            document.getElementById('clientVoen').value = doc.clientInfo.voen;
+            document.getElementById('clientAddress').value = doc.clientInfo.address;
+            document.getElementById('docNumber').value = doc.docInfo.number;
+            document.getElementById('docDate').value = doc.docInfo.rawDate;
+            
+            items = doc.items;
+            renderTable();
+            generateDocument(doc.type); // Re-generate preview
+        };
+        
+        window.deleteDocument = function(id) {
+            if (!confirm("Bu sənədi silməyə əminsiniz?")) return;
+            let savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+            savedDocs = savedDocs.filter(d => d.id !== id);
+            localStorage.setItem('documents', JSON.stringify(savedDocs));
+            loadSavedDocuments();
+        };
+
+        docDateInput.valueAsDate = new Date();
+
         addItemBtn.addEventListener('click', () => {
             const name = document.getElementById('itemName').value;
             const quantity = parseFloat(document.getElementById('itemQuantity').value);
             const price = parseFloat(document.getElementById('itemPrice').value);
 
             if (name && quantity > 0 && price >= 0) {
-                const item = { name, quantity, price };
-                items.push(item);
-                
+                items.push({ name, quantity, price });
                 document.getElementById('itemName').value = '';
                 document.getElementById('itemQuantity').value = '1';
                 document.getElementById('itemPrice').value = '0';
-                
                 renderTable();
             } else {
-                alert('Zəhmət olmasa, məhsul məlumatlarını düzgün daxil edin.');
+                alert('Məhsul məlumatlarını düzgün daxil edin.');
             }
         });
 
-        // Cədvəli yeniləyən funksiya
         function renderTable() {
             itemsTbody.innerHTML = '';
             items.forEach((item, index) => {
                 const row = document.createElement('tr');
-                const total = item.quantity * item.price;
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${item.name}</td>
                     <td>${item.quantity}</td>
-                    <td>${total.toFixed(2)} AZN</td>
-                    <td>${(total).toFixed(2)} AZN</td>
-                    <td><button class="delete-btn" onclick="deleteItem(${index})">Sil</button></td>
-                `;
+                    <td>${item.price.toFixed(2)}</td>
+                    <td>${(item.quantity * item.price).toFixed(2)}</td>
+                    <td><button class="delete-btn" onclick="deleteItem(${index})">✖</button></td>`;
                 itemsTbody.appendChild(row);
             });
             calculateTotals();
         }
 
-        // Məhsulu silən funksiya
-        function deleteItem(index) {
+        window.deleteItem = function(index) {
             items.splice(index, 1);
             renderTable();
-        }
+        };
 
-        // Yekun məbləğləri hesablayan funksiya
         function calculateTotals() {
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const vat = subtotal * 0.18;
-            const total = subtotal + vat;
-
-            subtotalEl.textContent = subtotal.toFixed(2);
-            vatEl.textContent = vat.toFixed(2);
-            totalEl.textContent = total.toFixed(2);
+            subtotalEl.textContent = `${subtotal.toFixed(2)} AZN`;
         }
         
-        // Əsas sənəd hazırlayan funksiya
-        function generateDocument(type) {
+        // Add global generateDocument function
+        window.generateDocument = function(type) {
             if (items.length === 0) {
-                alert('Sənəd hazırlamaq üçün ən azı bir məhsul/xidmət əlavə edin.');
+                alert('Sənəd hazırlamaq üçün məhsul/xidmət əlavə edin.');
                 return;
             }
-            
-            // Formalardakı bütün məlumatları yığırıq
+
             const companyInfo = {
+                logo: document.getElementById('companyLogo').value,
                 name: document.getElementById('companyName').value,
                 voen: document.getElementById('companyVoen').value,
                 address: document.getElementById('companyAddress').value,
@@ -435,130 +439,109 @@
             };
             const docInfo = {
                 number: document.getElementById('docNumber').value,
-                date: new Date(document.getElementById('docDate').value).toLocaleDateString('az-AZ')
+                date: new Date(document.getElementById('docDate').value).toLocaleDateString('az-AZ', { year: 'numeric', month: 'long', day: 'numeric' }),
+                rawDate: document.getElementById('docDate').value
             };
-            
-            // Sənəd növünə görə məzmunu hazırlayırıq
-            let documentTitle = '';
-            let contentHTML = '';
-            let signatureHTML = '';
 
-            // Məhsul cədvəlinin HTML-i
-            let itemsTableHTML = `
-                <table class="items-table" style="width:100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            <th style="border: 1px solid #ddd; padding: 8px;">№</th>
-                            <th style="border: 1px solid #ddd; padding: 8px;">Adı</th>
-                            <th style="border: 1px solid #ddd; padding: 8px;">Miqdar</th>
-                            ${type !== 'act' ? `
-                            <th style="border: 1px solid #ddd; padding: 8px;">Vahidin qiyməti</th>
-                            <th style="border: 1px solid #ddd; padding: 8px;">Cəm</th>
-                            ` : ''}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map((item, index) => `
-                            <tr>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${item.quantity}</td>
-                                ${type !== 'act' ? `
-                                <td style="border: 1px solid #ddd; padding: 8px;">${item.price.toFixed(2)} AZN</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${(item.quantity * item.price).toFixed(2)} AZN</td>
-                                ` : ''}
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-
-            // Yekun məbləğlərin HTML-i (təhvil-təslim aktı xaric)
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
-
-            let totalsHTML = `
-                <div class="totals" style="text-align: right; margin-top: 20px;">
-                    <p>Məbləğ (ƏDV-siz): <strong>${subtotal.toFixed(2)} AZN</strong></p>
-                    <p>ƏDV (18%): <strong>${vat.toFixed(2)} AZN</strong></p>
-                    <p style="font-size: 1.2em;">Yekun Məbləğ: <strong>${total.toFixed(2)} AZN</strong></p>
-                </div>
-            `;
             
-            // Sənəd növünə görə fərqli hissələr
-            switch (type) {
-                case 'quote':
-                    documentTitle = 'Qiymət Təklifi';
-                    signatureHTML = `
-                        <div class="signature-area">
-                             <div class="signature-box">
-                                <p>${companyInfo.name}<br>(İmza / Möhür)</p>
-                             </div>
-                        </div>`;
-                    contentHTML = `${itemsTableHTML} ${totalsHTML} ${signatureHTML}`;
-                    break;
-                case 'act':
-                    documentTitle = 'Təhvil-Təslim Aktı';
-                    signatureHTML = `
-                        <p style="margin-top: 30px;">Tərəflər təsdiq edir ki, yuxarıda göstərilən xidmətlər/məhsullar tam və qənaətbəxş şəkildə təhvil verilmişdir və qarşılıqlı iddialar yoxdur.</p>
-                        <div class="signature-area">
-                             <div class="signature-box">
-                                <h3>Təhvil Verdi:</h3>
-                                <p>${companyInfo.name}<br>(İmza / Möhür)</p>
-                             </div>
-                             <div class="signature-box">
-                                <h3>Təhvil Aldı:</h3>
-                                <p>${clientInfo.name}<br>(İmza / Möhür)</p>
-                             </div>
-                        </div>`;
-                    contentHTML = `${itemsTableHTML} ${signatureHTML}`;
-                    break;
-                case 'invoice':
-                    documentTitle = 'Hesab-Faktura';
-                    signatureHTML = `
-                        <div style="margin-top: 40px;">
-                           <h3>Bank Rekvizitləri:</h3>
-                           <p>${companyInfo.bank}</p>
-                        </div>
-                        <div class="signature-area">
-                             <div class="signature-box">
-                                <p>İcraçı: ${companyInfo.name}<br>(İmza / Möhür)</p>
-                             </div>
-                        </div>`;
-                    contentHTML = `${itemsTableHTML} ${totalsHTML} ${signatureHTML}`;
-                    break;
+            let docTitle = '';
+            let itemsTableHTML = '';
+            let totalsHTML = '';
+            let footerHTML = '';
+
+            switch(type){
+                case 'quote': docTitle = 'Qiymət Təklifi'; break;
+                case 'act': docTitle = 'Təhvil-Təslim Aktı'; break;
+                case 'invoice': docTitle = 'Hesab-Faktura'; break;
+            }
+            
+            // Build Items Table
+            itemsTableHTML = `
+                <table class="doc-table">
+                    <thead><tr>
+                        <th>№</th><th>Adı</th><th>Miqdar</th>
+                        ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}
+                    </tr></thead>
+                    <tbody>
+                        ${items.map((item, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}
+                            </tr>`).join('')}
+                    </tbody>
+                </table>`;
+            
+            // Build Totals Table
+            if(type !== 'act') {
+                totalsHTML = `
+                <div class="doc-totals">
+                    <table>
+                        <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
+                        <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
+                        <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
+                    </table>
+                </div>`;
             }
 
-            // Bütün HTML-i birləşdirib ekrana çıxarırıq
-            outputDiv.innerHTML = `
-                <h2>${documentTitle} № ${docInfo.number}</h2>
-                <div class="document-info">
-                    <p><strong>Tarix:</strong> ${docInfo.date}</p>
-                </div>
-                <div class="output-header">
-                    <div>
-                        <h3>Göndərən:</h3>
-                        <p><strong>Şirkət:</strong> ${companyInfo.name}</p>
-                        <p><strong>VÖEN:</strong> ${companyInfo.voen}</p>
-                        <p><strong>Ünvan:</strong> ${companyInfo.address}</p>
-                    </div>
-                    <div>
-                        <h3>Alan:</h3>
-                        <p><strong>Şirkət:</strong> ${clientInfo.name}</p>
-                        <p><strong>VÖEN:</strong> ${clientInfo.voen}</p>
-                        <p><strong>Ünvan:</strong> ${clientInfo.address}</p>
-                    </div>
-                </div>
-                ${contentHTML}
-                <div style="text-align:center; margin-top: 40px;">
-                    <button id="printBtn" class="btn btn-primary" onclick="window.print()">Sənədi Çap Et</button>
-                </div>
-            `;
-            outputDiv.style.display = 'block';
-            outputDiv.scrollIntoView({ behavior: 'smooth' });
-        }
+            // Build Footer
+            if(type === 'act') {
+                 footerHTML = `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;">
+                    <div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
+                    <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div>
+                 </div>`;
+            } else {
+                 footerHTML = `<div class="doc-footer" style="display:flex; justify-content:space-between;">
+                    <div>${type === 'invoice' ? `<strong>Bank Rekvizitləri:</strong><br><small>${companyInfo.bank}</small>`: ''}</div>
+                    <div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
+                 </div>`;
+            }
 
+            outputDiv.classList.remove('placeholder');
+            outputDiv.innerHTML = `
+                <div class="doc-header">
+                    <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3>${companyInfo.name}</h3>`}</div>
+                    <div class="doc-title">
+                        <h2>${docTitle}</h2>
+                        <p>№: ${docInfo.number}<br>Tarix: ${docInfo.date}</p>
+                    </div>
+                </div>
+                <div class="doc-parties">
+                    <div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div>
+                    <div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div>
+                </div>
+                ${itemsTableHTML}
+                ${totalsHTML}
+                ${footerHTML}
+                <div id="printBtnContainer" style="text-align:center; margin-top: 30px; padding-top:20px; clear:both;">
+                    <button class="btn btn-primary" onclick="window.print()">Sənədi Çap Et</button>
+                </div>`;
+            
+            const fullDocumentData = {
+                id: `${Date.now()}`,
+                timestamp: new Date().toISOString(),
+                type, companyInfo, clientInfo, docInfo, items,
+            };
+
+            saveDocument(fullDocumentData);
+        };
+
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.className = 'btn-group';
+        buttonsDiv.innerHTML = `
+            <button class="btn btn-primary" onclick="generateDocument('quote')">Qiymət Təklifi</button>
+            <button class="btn btn-primary" onclick="generateDocument('act')">Təhvil-Təslim Aktı</button>
+            <button class="btn btn-primary" onclick="generateDocument('invoice')">Hesab-Faktura</button>
+        `;
+        document.querySelector('.form-container').appendChild(buttonsDiv);
+        
+        // Initial load
+        loadSavedDocuments();
+    });
     </script>
 </body>
 </html>
