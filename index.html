@@ -11,15 +11,15 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        /* İşıqlı Tema (Standart) */
+        /* YENİLƏNMİŞ İşıqlı Tema (Standart) */
         :root {
-            --primary-color: #3182CE;
-            --primary-hover-color: #2B6CB0;
-            --background-color: #F7FAFC;
-            --secondary-color: #FFFFFF;
+            --primary-color: #2563EB; /* Daha tünd mavi */
+            --primary-hover-color: #1D4ED8;
+            --background-color: #F1F5F9; /* Açıq boz fon */
+            --secondary-color: #FFFFFF; /* Panellər üçün ağ */
             --border-color: #E2E8F0;
             --text-color: #1A202C;
-            --text-muted-color: #718096;
+            --text-muted-color: #64748B;
             --danger-color: #E53E3E;
             --input-bg-color: #FFFFFF;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -39,7 +39,7 @@
 
         body { font-family: var(--font-family); background-color: var(--background-color); color: var(--text-color); margin: 0; font-size: 14px; transition: background-color 0.3s, color 0.3s; }
         .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding: 25px; height: 100vh; box-sizing: border-box; }
-        .form-container, .sidebar { background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; overflow-y: auto; height: calc(100vh - 50px); transition: background-color 0.3s, border-color 0.3s; }
+        .form-container, .sidebar { background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; overflow-y: auto; height: calc(100vh - 50px); transition: background-color 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
         h1, h2 { color: var(--text-color); margin-top: 0; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         h1 { font-size: 24px; margin-bottom: 25px; color: var(--text-color); }
         h2 { font-size: 20px; margin-bottom: 20px; text-align: left; }
@@ -172,35 +172,12 @@
             document.getElementById('companyAddress')
         ];
 
-        function saveSellerInfo() {
-            const sellerInfo = {
-                bank: document.getElementById('companyBank').value,
-                logo: document.getElementById('companyLogo').value,
-                name: document.getElementById('companyName').value,
-                voen: document.getElementById('companyVoen').value,
-                address: document.getElementById('companyAddress').value
-            };
-            db.collection('settings').doc('seller').set(sellerInfo).catch(error => console.error("Satıcı məlumatını saxlama xətası: ", error));
-        }
-
-        function loadSellerInfo() {
-            db.collection('settings').doc('seller').get().then(doc => {
-                if (doc.exists) {
-                    const sellerInfo = doc.data();
-                    document.getElementById('companyBank').value = sellerInfo.bank || '';
-                    document.getElementById('companyLogo').value = sellerInfo.logo || '';
-                    document.getElementById('companyName').value = sellerInfo.name || '';
-                    document.getElementById('companyVoen').value = sellerInfo.voen || '';
-                    document.getElementById('companyAddress').value = sellerInfo.address || '';
-                }
-            }).catch(error => console.error("Satıcı məlumatını yükləmə xətası: ", error));
-        }
-
+        function saveSellerInfo() { /* ... eyni kod ... */ }
+        function loadSellerInfo() { /* ... eyni kod ... */ }
         sellerFields.forEach(field => { field.addEventListener('input', saveSellerInfo); });
         loadSellerInfo(); 
-
-        excelInput.addEventListener('change', (event) => { /* ... eyni kod ... */ });
         
+        excelInput.addEventListener('change', (event) => { /* ... eyni kod ... */ });
         function listenForProjects() { /* ... eyni kod ... */ }
         function updateDocNumber(projects) { /* ... eyni kod ... */ }
         saveProjectBtn.addEventListener('click', () => { /* ... eyni kod ... */ });
@@ -219,36 +196,47 @@
         window.deleteItem = function(index) { items.splice(index, 1); renderTable(); };
         function calculateTotals() { /* ... eyni kod ... */ }
         
-        // --- Tam Funksional Kodlar (Yuxarıda qısaldılmış hissələrin tam versiyası) ---
+        // --- Tam Funksional Kodlar ---
+        function saveSellerInfo() {
+            const sellerInfo = {
+                bank: document.getElementById('companyBank').value, logo: document.getElementById('companyLogo').value,
+                name: document.getElementById('companyName').value, voen: document.getElementById('companyVoen').value,
+                address: document.getElementById('companyAddress').value
+            };
+            db.collection('settings').doc('seller').set(sellerInfo).catch(error => console.error("Satıcı məlumatını saxlama xətası: ", error));
+        }
+        function loadSellerInfo() {
+            db.collection('settings').doc('seller').get().then(doc => {
+                if (doc.exists) {
+                    const sellerInfo = doc.data();
+                    document.getElementById('companyBank').value = sellerInfo.bank || ''; document.getElementById('companyLogo').value = sellerInfo.logo || '';
+                    document.getElementById('companyName').value = sellerInfo.name || ''; document.getElementById('companyVoen').value = sellerInfo.voen || '';
+                    document.getElementById('companyAddress').value = sellerInfo.address || '';
+                }
+            }).catch(error => console.error("Satıcı məlumatını yükləmə xətası: ", error));
+        }
         excelInput.addEventListener('change', (event) => {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
+            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    let importedCount = 0;
+                    const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); let importedCount = 0;
                     jsonData.forEach((row) => {
                         if (row.length >= 3 && row[0] && !isNaN(parseFloat(row[1])) && !isNaN(parseFloat(row[2]))) {
                             items.push({ name: row[0], quantity: parseFloat(row[1]), price: parseFloat(row[2]) });
                             importedCount++;
                         }
                     });
-                    renderTable();
-                    alert(`${importedCount} məhsul uğurla əlavə edildi!`);
+                    renderTable(); alert(`${importedCount} məhsul uğurla əlavə edildi!`);
                 } catch (error) { console.error("Excel faylını oxuma xətası:", error); alert("Faylı oxumaq mümkün olmadı. Zəhmət olmasa faylın formatını yoxlayın.");
                 } finally { event.target.value = ''; }
             };
             reader.readAsArrayBuffer(file);
         });
-
         function listenForProjects() {
             db.collection('projects').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-                const projects = [];
-                snapshot.forEach(doc => { projects.push({ id: doc.id, ...doc.data() }); });
+                const projects = []; snapshot.forEach(doc => { projects.push({ id: doc.id, ...doc.data() }); });
                 savedProjectsList.innerHTML = '';
                 projects.forEach(p => {
                     const li = document.createElement('li');
@@ -258,14 +246,12 @@
                 updateDocNumber(projects);
             }, error => { console.error("Layihələri dinləmə xətası: ", error); });
         }
-
         function updateDocNumber(projects) {
             if (currentEditingProjectId) return;
             let lastNum = 0;
             if (projects && projects.length > 0) { lastNum = Math.max(0, ...projects.map(p => parseInt(p.docInfo.number.split('-')[1] || 0))); }
             document.getElementById('docNumber').value = `SN-${String(lastNum + 1).padStart(3, '0')}`;
         }
-        
         saveProjectBtn.addEventListener('click', () => {
             if (items.length === 0) { alert('Layihə yaratmaq üçün məhsul/xidmət əlavə edin.'); return; }
             const rawData = {
@@ -278,19 +264,13 @@
             const newProject = { timestamp: parseInt(projectId), clientInfo: rawData.clientInfo, docInfo: rawData.docInfo, rawData: rawData };
             db.collection('projects').doc(projectId).set(newProject).then(() => { console.log("Layihə uğurla saxlanıldı!"); resetForm(); }).catch(error => { console.error("Layihəni saxlama xətası: ", error); alert("Xəta baş verdi, layihə saxlanılmadı."); });
         });
-        
         function generateDocumentHTML(type, data) {
             const { companyInfo, clientInfo, docInfo, items } = data;
-            const dateObj = new Date(docInfo.rawDate);
-            const adjustedDate = new Date(dateObj.valueOf() + dateObj.getTimezoneOffset() * 60 * 1000);
-            const day = String(adjustedDate.getDate()).padStart(2, '0');
-            const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); 
-            const year = adjustedDate.getFullYear();
-            const numericDate = `${day}.${month}.${year}`;
-            const docDate = `${numericDate}-ci il`;
+            const dateObj = new Date(docInfo.rawDate); const adjustedDate = new Date(dateObj.valueOf() + dateObj.getTimezoneOffset() * 60 * 1000);
+            const day = String(adjustedDate.getDate()).padStart(2, '0'); const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); const year = adjustedDate.getFullYear();
+            const numericDate = `${day}.${month}.${year}`; const docDate = `${numericDate}-ci il`;
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const vat = subtotal * 0.18;
-            const total = subtotal + vat;
+            const vat = subtotal * 0.18; const total = subtotal + vat;
             let docTitle = '';
             switch(type){
                 case 'quote': docTitle = 'Qiymət Razılaşdırma Protokolu'; break;
