@@ -125,14 +125,13 @@
         .doc-bank-details {
             margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px;
             font-size: 12px; line-height: 1.6;
-            /* DÜZƏLİŞ: Mətni qırılmağa məcbur edir */
-            overflow-wrap: break-word;
+            /* DÜZƏLİŞ: Mətnin qırılmadan və sətir-sətir göstərilməsini təmin edir */
+            white-space: pre-wrap;
             word-break: break-all;
         }
         .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } 
         .doc-parties div { 
             width: 48%; line-height: 1.5; font-size: 12px;
-            /* DÜZƏLİŞ: Mətni qırılmağa məcbur edir */
             overflow-wrap: break-word;
             word-break: break-all;
         }
@@ -158,7 +157,7 @@
                 <legend>Bank Rekvizitləri</legend>
                 <div class="form-group full-width">
                     <label>Bank və hesab məlumatlarınız (Hesab-Faktura üçün)</label>
-                    <textarea id="companyBank" rows="4">Bank: Kapital Bank ASC&#10;H/H: AZ12345678901234567890&#10;M/H: AZ12345678901234567890&#10;Kod: 200100</textarea>
+                    <textarea id="companyBank" rows="4">Bank: Kapital Bank ASC&#10;H/H: AZ1234567890123456789012345678&#10;M/H: AZ1234567890123456789012345678&#10;Kod: 200100&#10;SWIFT: AIIBAZ2X</textarea>
                 </div>
             </fieldset>
 
