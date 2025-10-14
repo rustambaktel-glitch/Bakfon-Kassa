@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sənəd Generatoru (Son Versiya)</title>
+    <title>Sənəd Generatoru (Final Versiya)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <style>
         :root {
             --primary-color: #4299E1; /* Bright Blue Accent */
@@ -72,6 +75,9 @@
             color: var(--text-color);
             transition: all 0.2s ease-in-out;
         }
+        /* Tarix xanası üçün xüsusi stil */
+        input#docDate { background-color: var(--background-color) !important; color: var(--text-color) !important; }
+
         input:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3); }
         .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .items-table th, .items-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
@@ -168,7 +174,7 @@
                 <legend>Sənəd Məlumatları</legend>
                  <div class="form-grid">
                     <div class="form-group"><label>Sənəd Nömrəsi</label><input type="text" id="docNumber"></div>
-                    <div class="form-group"><label>Tarix</label><input type="date" id="docDate"></div>
+                    <div class="form-group"><label>Tarix</label><input type="text" id="docDate" placeholder="Tarixi seçin..."></div>
                  </div>
             </fieldset>
 
@@ -224,7 +230,15 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const docDateInput = document.getElementById('docDate');
+        // --- YENİ HİSSƏ: Flatpickr təqviminin başladılması ---
+        flatpickr("#docDate", {
+            altInput: true,       // Görünən və gizli input yaradır
+            altFormat: "d.m.Y",   // İstifadəçinin gördüyü format (dd.mm.yyyy)
+            dateFormat: "Y-m-d",    // Kodun işlədiyi arxa plan formatı (yyyy-mm-dd)
+            defaultDate: "today",   // Standart olaraq bugünkü tarix seçilsin
+        });
+
+        const docDateInput = document.getElementById('docDate'); // Bu dəyişən qalır
         const addItemBtn = document.getElementById('addItemBtn');
         const itemsTbody = document.getElementById('itemsTbody');
         const subtotalEl = document.getElementById('subtotal');
@@ -325,25 +339,19 @@
             resetForm();
         });
         
-        // --- DƏYİŞİKLİK EDİLMİŞ HİSSƏ ---
         function generateDocumentHTML(type, data) {
             const { companyInfo, clientInfo, docInfo, items } = data;
-
-            // DƏYİŞİKLİK: Tarix formatı yeniləndi
             const numericDate = new Date(docInfo.rawDate).toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const docDate = `${numericDate}-ci il`;
-            
             const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const vat = subtotal * 0.18;
             const total = subtotal + vat;
-            
             let docTitle = '';
             switch(type){
                 case 'quote': docTitle = 'Qiymət Razılaşdırma Protokolu'; break;
                 case 'act': docTitle = 'Təhvil-Təslim Aktı'; break;
                 case 'invoice': docTitle = 'Hesab-Faktura'; break;
             }
-
             let bankDetailsHTML = '';
             if (type === 'invoice' && companyInfo.bank) {
                 bankDetailsHTML = `<div class="doc-bank-details">
@@ -351,25 +359,21 @@
                     <small>${companyInfo.bank.replace(/\n/g, '<br>')}</small>
                 </div>`;
             }
-            
             const itemsTableHTML = `<table class="doc-table"><thead><tr><th>№</th><th>Adı</th><th>Miqdar</th>
                 ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}</tr></thead>
                 <tbody>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td>
                 ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}</tr>`).join('')}
                 </tbody></table>`;
-            
             const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table>
                 <tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr>
                 <tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr>
                 <tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr>
                 </table></div>` : '';
-
             const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;">
                 <div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div>
                 <div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>`
                 : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;">
                 <strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`;
-            
             return `<div class="printable-area">
                 <div class="doc-header">
                     <div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div>
@@ -385,9 +389,13 @@
         
         function resetForm() {
             document.querySelector('.form-container').reset();
+            // Flatpickr təqvimini də təmizləyirik
+            const fp = document.querySelector("#docDate")._flatpickr;
+            fp.setDate("today");
+
             items = []; currentEditingProjectId = null;
             saveProjectBtn.textContent = "Sənədləri Hazırla və Yadda Saxla";
-            renderTable(); docDateInput.valueAsDate = new Date(); updateDocNumber();
+            renderTable(); updateDocNumber();
         }
         
         window.viewProject = function(id) {
@@ -405,7 +413,7 @@
         
         printModalBtn.addEventListener('click', () => {
              const printContent = modalBody.querySelector('.printable-area').outerHTML;
-             const styles = document.head.querySelectorAll('style');
+             const styles = document.head.querySelectorAll('style, link[rel="stylesheet"]');
              const printWindow = window.open('', '_blank');
              if (printWindow) {
                 printWindow.document.write('<!DOCTYPE html><html><head><title>Print</title>');
@@ -430,7 +438,11 @@
             document.getElementById('clientVoen').value = data.clientInfo.voen;
             document.getElementById('clientAddress').value = data.clientInfo.address;
             document.getElementById('docNumber').value = data.docInfo.number;
-            document.getElementById('docDate').value = data.docInfo.rawDate;
+            
+            // Flatpickr təqviminə dəyəri təyin edirik
+            const fp = document.querySelector("#docDate")._flatpickr;
+            fp.setDate(data.docInfo.rawDate);
+
             items = data.items; renderTable();
             currentEditingProjectId = id;
             saveProjectBtn.textContent = "Dəyişiklikləri Yadda Saxla";
@@ -441,7 +453,6 @@
             saveProjects(getProjects().filter(p => p.id !== id));
         }
 
-        docDateInput.valueAsDate = new Date();
         addItemBtn.addEventListener('click', () => {
             const name = document.getElementById('itemName').value;
             const quantity = parseFloat(document.getElementById('itemQuantity').value);
