@@ -125,7 +125,6 @@
         .doc-bank-details {
             margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px;
             font-size: 12px; line-height: 1.6;
-            /* DÜZƏLİŞ: Mətnin qırılmadan və sətir-sətir göstərilməsini təmin edir */
             white-space: pre-wrap;
             word-break: break-all;
         }
@@ -140,9 +139,20 @@
         .doc-totals { margin-top: 25px; float: right; width: 250px; }
         .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; }
         .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
+        
+        /* DÜZƏLİŞ: Çap üçün xüsusi stillər */
         @media print {
-            body { background-color: white; }
-            .printable-area { box-shadow: none; border: none; }
+            body { 
+                background-color: white;
+                margin: 0; /* Brauzerin standart kənar boşluqlarını ləğv edir */
+            }
+            .printable-area { 
+                box-shadow: none; 
+                border: none;
+                padding: 0; /* Çapda daxili boşluqları sıfırlayırıq */
+                /* Yuxarıdan 40px (təxminən 1 sm) boşluq əlavə edir */
+                margin-top: 40px; 
+            }
         }
     </style>
 </head>
