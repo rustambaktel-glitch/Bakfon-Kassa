@@ -68,12 +68,38 @@
         .modal-content { background: var(--secondary-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
         .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted-color); }
-        .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; } .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; } .doc-header img { max-width: 150px; max-height: 70px; } .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; } .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; } .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; overflow-wrap: break-word; word-break: break-all; } 
+        .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; } .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; } .doc-header img { max-width: 150px; max-height: 70px; } .doc-title { text-align: right; } .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; background: none; padding: 0; border: none; } .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; } 
+        
+        /* YENİLƏNMİŞ: Göndərən/Alan yerləri (Alan sağa keçir) */
+        .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; } 
+        .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; overflow-wrap: break-word; word-break: break-all; } 
+        /* YENİLƏNMİŞ SONU */
+
         /* Cədvəl Xətlərini Tündləşdirmək Üçün Dəyişiklik */
         .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; } 
         .doc-table th, .doc-table td { border: 1px solid #333333; padding: 8px; } /* #333333 ilə tündləşdirmə */
         .doc-table th { background-color: #f0f0f0; } 
-        .doc-totals { margin-top: 25px; float: right; width: 250px; } .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; } .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
+        .doc-totals { margin-top: 25px; float: right; width: 250px; } .doc-totals table { width: 100%; } .doc-totals td { padding: 5px; font-size: 12px; } 
+        
+        /* İMZALAR ÜÇÜN DƏYİŞİKLİK */
+        .doc-footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #cccccc; clear: both; }
+        .signature-area { 
+            display: flex; 
+            justify-content: space-between; 
+            text-align: center; 
+            margin-top: 50px; 
+        }
+        .signature-box {
+            width: 45%; 
+            font-size: 12px;
+        }
+        .signature-line {
+            margin-top: 50px; 
+            border-top: 1px solid #000; 
+            padding-top: 5px;
+        }
+        /* İMZALAR ÜÇÜN DƏYİŞİKLİK SONU */
+
         .export-btns { display: flex; gap: 10px; }
         .export-btns .btn { width: auto; padding: 8px 15px; font-size: 14px; }
         @media print { body { background-color: white; margin: 0; } .printable-area { box-shadow: none; border: none; padding: 0; margin-top: 40px; } }
@@ -228,8 +254,40 @@
                 } 
                 const itemsTableHTML = `<table class="doc-table"><thead><tr><th>№</th><th>Adı</th><th>Miqdar</th> ${type !== 'act' ? '<th>Qiymət</th><th>Cəm</th>' : ''}</tr></thead><tbody>${items.map((item, index) => `<tr><td>${index + 1}</td><td>${item.name}</td><td>${item.quantity}</td> ${type !== 'act' ? `<td>${item.price.toFixed(2)} AZN</td><td>${(item.quantity * item.price).toFixed(2)} AZN</td>` : ''}</tr>`).join('')}</tbody></table>`; 
                 const totalsHTML = type !== 'act' ? `<div class="doc-totals"><table><tr><td>Məbləğ (ƏDV-siz):</td><td style="text-align:right;">${subtotal.toFixed(2)} AZN</td></tr><tr><td>ƏDV (18%):</td><td style="text-align:right;">${vat.toFixed(2)} AZN</td></tr><tr><td style="font-weight:bold;">Yekun Məbləğ:</td><td style="text-align:right; font-weight:bold;">${total.toFixed(2)} AZN</td></tr></table></div>` : ''; 
-                const footerHTML = type === 'act' ? `<div class="doc-footer" style="display:flex; justify-content:space-between; text-align:center;"><div><strong>Təhvil Verdi:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div><div><strong>Təhvil Aldı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${clientInfo.name}</p></div></div>` : `<div class="doc-footer" style="display:flex; justify-content:flex-end;"><div style="text-align:center;"><strong>İcraçı:</strong><p style="margin-top:50px; border-top:1px solid #000;">${companyInfo.name}</p></div></div>`; 
-                return `<div class="printable-area"><div class="doc-header"><div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div><div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div></div>${bankDetailsHTML}<div class="doc-parties"><div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div><div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div></div>${itemsTableHTML}${totalsHTML}${footerHTML}</div>`; 
+                
+                // YENİLƏNMİŞ: İMZA SAHƏSİ
+                let footerHTML = '';
+                if (type === 'act' || type === 'quote') {
+                    // Təhvil-Təslim Aktı VƏ Qiymət Razılaşdırma Protokolu üçün iki tərəfli imza.
+                    // Qeyd: Qiymət Protokolu üçün "Təhvil Verdi/Aldı" mətnini "Satıcı/Alıcı" kimi dəyişmək daha doğru olardı, lakin mövcud məntiqə uyğun olaraq buraxılır.
+                    footerHTML = `<div class="doc-footer"><div class="signature-area">
+                        <div class="signature-box">
+                            <strong>Satıcı:</strong>
+                            <div class="signature-line">${companyInfo.name}</div>
+                        </div>
+                        <div class="signature-box">
+                            <strong>Alıcı:</strong>
+                            <div class="signature-line">${clientInfo.name}</div>
+                        </div>
+                    </div></div>`;
+                } else {
+                    // Hesab-Faktura üçün (İcraçı/Satıcı tərəfi - Sağda)
+                    footerHTML = `<div class="doc-footer" style="display:flex; justify-content:flex-end;">
+                        <div style="text-align:center; width: 45%;">
+                            <strong>İcraçı:</strong>
+                            <div class="signature-line">${companyInfo.name}</div>
+                        </div>
+                    </div>`;
+                }
+
+                // YENİLƏNMİŞ: Göndərən/Alan yerləri (Satıcı Sola, Alan sağa keçir)
+                const partiesHTML = `<div class="doc-parties">
+                    <div><strong>Göndərən:</strong><br>${companyInfo.name}<br>VÖEN: ${companyInfo.voen}<br>${companyInfo.address}</div>
+                    <div><strong>Alan:</strong><br>${clientInfo.name}<br>VÖEN: ${clientInfo.voen}<br>${clientInfo.address}</div>
+                </div>`;
+
+
+                return `<div class="printable-area"><div class="doc-header"><div>${companyInfo.logo ? `<img src="${companyInfo.logo}" alt="Şirkət loqosu">` : `<h3 style="color: #333;">${companyInfo.name}</h3>`}</div><div class="doc-title"><h2>${docTitle}</h2><p>№: ${docInfo.number}<br>Tarix: ${docDate}</p></div></div>${bankDetailsHTML}${partiesHTML}${itemsTableHTML}${totalsHTML}${footerHTML}</div>`; 
             }
             
             // --- YENİ ÇIXARIŞ FUNKSİYALARI ---
@@ -289,6 +347,48 @@
                 XLSX.utils.book_append_sheet(wb, ws, "Məhsullar");
                 XLSX.writeFile(wb, `${docType}-${projectData.docInfo.number}.xlsx`);
             }
+            
+            // TƏKMİLLƏŞDİRİLMİŞ: Word'ə Çıxarış Funksiyası (Preview bənzərliyi üçün CSS əlavə edildi)
+            function exportToWord(projectData, docType) {
+                const docHTML = generateDocumentHTML(docType, projectData.rawData);
+                
+                // ⚠️ Bütün kritik sənəd stilləri daxil edilir. Bu, Word-də görünüş bənzərliyini artırır.
+                const styles = `
+                    .printable-area { background-color: white; color: black; padding: 40px; min-height: 100%; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; } 
+                    .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #005A9C; padding-bottom: 15px; width: 100%; } 
+                    .doc-header img { max-width: 150px; max-height: 70px; } 
+                    .doc-title { text-align: right; } 
+                    .doc-title h2 { color: #005A9C; margin: 0; font-size: 28px; } 
+                    .doc-bank-details { margin: 20px 0; padding: 15px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; } 
+                    .doc-parties { display: flex; justify-content: space-between; margin-top: 20px; width: 100%; } 
+                    .doc-parties div { width: 48%; line-height: 1.5; font-size: 12px; overflow-wrap: break-word; word-break: break-all; } 
+                    .doc-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 12px; } 
+                    .doc-table th, .doc-table td { border: 1px solid #333333; padding: 8px; } 
+                    .doc-table th { background-color: #f0f0f0; } 
+                    .doc-totals { margin-top: 25px; float: right; width: 250px; } 
+                    .doc-totals table { width: 100%; } 
+                    .doc-totals td { padding: 5px; font-size: 12px; } 
+                    .doc-footer { margin-top: 50px; padding-top: 20px; clear: both; }
+                    .signature-area { display: flex; justify-content: space-between; text-align: center; margin-top: 50px; width: 100%; }
+                    .signature-box { width: 45%; font-size: 12px; }
+                    .signature-line { margin-top: 50px; border-top: 1px solid #000; padding-top: 5px; }
+                `;
+
+
+                const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Word Document</title><style>${styles}</style></head><body>`;
+                const footer = "</body></html>";
+                const sourceHTML = header + docHTML + footer;
+
+                // MIME tipi və kodlaşdırma
+                const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+                
+                const fileDownload = document.createElement("a");
+                document.body.appendChild(fileDownload);
+                fileDownload.href = source;
+                fileDownload.download = `${docType}-${projectData.docInfo.number}.doc`;
+                fileDownload.click();
+                document.body.removeChild(fileDownload);
+            }
             // --- YENİ ÇIXARIŞ FUNKSİYALARI SONU ---
 
             window.displayProject = (projectId) => { 
@@ -310,6 +410,7 @@
                                 <div class="export-btns">
                                     <button id="project-export-pdf" class="btn">PDF</button>
                                     <button id="project-export-excel" class="btn">Excel</button>
+                                    <button id="project-export-word" class="btn">Word</button>
                                 </div>
                                 <button id="project-load-btn" style="background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 15px; border-radius: 6px; cursor: pointer;">Düzəliş et</button>
                                 <button id="project-delete-btn" style="background: var(--danger-color); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; border:none;">Sil</button>
@@ -349,9 +450,10 @@
                         } else { alert("Popup pəncərələr bloklanıb."); } 
                     }); 
                     
-                    // PDF və Excel düymələrinin hadisə dinləyiciləri
+                    // PDF, Excel, və Word düymələrinin hadisə dinləyiciləri
                     projectDetailView.querySelector('#project-export-pdf').addEventListener('click', () => exportToPDF(projectData, currentDocType));
                     projectDetailView.querySelector('#project-export-excel').addEventListener('click', () => exportToExcel(projectData, currentDocType));
+                    projectDetailView.querySelector('#project-export-word').addEventListener('click', () => exportToWord(projectData, currentDocType));
 
                     projectDetailView.querySelector('.project-view-tabs').addEventListener('click', e => { 
                         if (e.target.tagName === 'BUTTON') displayDoc(e.target.dataset.type); 
